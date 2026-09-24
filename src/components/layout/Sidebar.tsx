@@ -3,20 +3,20 @@ import { NavLink } from 'react-router-dom';
 import { Home, Clapperboard, Calendar, GraduationCap, ClipboardList, BookOpen, BarChart3, TreePalm, Settings } from 'lucide-react';
 
 const navItems = [
-  { to: '/', label: 'الرئيسية', icon: Home },
-  { to: '/scripts', label: 'النصوص المسرحية', icon: Clapperboard },
-  { to: '/schedule', label: 'جدول الحصص', icon: Calendar },
-  { to: '/training', label: 'جدول التداريب', icon: GraduationCap },
-  { to: '/training-log', label: 'سجل التداريب', icon: ClipboardList },
-  { to: '/program', label: 'البرنامج السنوي', icon: BookOpen },
-  { to: '/reports', label: 'التقارير', icon: BarChart3 },
-  { to: '/holidays', label: 'العطل المدرسية', icon: TreePalm },
-  { to: '/settings', label: 'الإعدادات', icon: Settings },
+  { to: '/admin', label: 'الرئيسية', icon: Home },
+  { to: '/admin/scripts', label: 'النصوص المسرحية', icon: Clapperboard },
+  { to: '/admin/schedule', label: 'جدول الحصص', icon: Calendar },
+  { to: '/admin/training', label: 'جدول التداريب', icon: GraduationCap },
+  { to: '/admin/training-log', label: 'سجل التداريب', icon: ClipboardList },
+  { to: '/admin/program', label: 'البرنامج السنوي', icon: BookOpen },
+  { to: '/admin/reports', label: 'التقارير', icon: BarChart3 },
+  { to: '/admin/holidays', label: 'العطل المدرسية', icon: TreePalm },
+  { to: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ];
 
 export default function Sidebar() {
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-bg-card border-s border-border h-screen sticky top-0 shrink-0">
+    <aside className="hidden md:flex flex-col w-64 bg-bg-card border-s border-border h-screen sticky top-0 shrink-0 no-print">
       {/* Logo */}
       <div className="p-5 border-b border-border">
         <div className="flex items-center gap-3">
@@ -34,7 +34,7 @@ export default function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
+            end={item.to === '/admin'}
             className={({ isActive }) =>
               `flex items-center gap-3 px-5 py-3 text-sm transition-colors ${
                 isActive
@@ -52,7 +52,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-border space-y-2">
         <NavLink
-          to="/site"
+          to="/"
           className="flex items-center justify-center gap-2 text-xs bg-primary/10 text-primary px-3 py-2 rounded-lg hover:bg-primary/20 transition-colors font-medium"
         >
           🌐 <span>موقع الزوار</span>

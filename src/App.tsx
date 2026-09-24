@@ -48,11 +48,11 @@ export default function App() {
       <Routes>
         {/* موقع الزوار */}
         <Route element={<VisitorLayout />}>
-          <Route path="site" element={<VisitorSite />} />
+          <Route index element={<VisitorSite />} />
         </Route>
 
         {/* لوحة التحكم */}
-        <Route element={<AppLayout />}>
+        <Route path="admin" element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="training" element={<TrainingPage />} />

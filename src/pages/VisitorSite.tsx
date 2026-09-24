@@ -5,7 +5,7 @@ import { db } from '../db/database';
 import { DAY_NAMES } from '../types';
 import type { ClassSection } from '../types';
 import { DEFAULT_PROGRAM_PHASES } from '../constants/program';
-import { Calendar, Clock, BookOpen, Users, Star, ChevronLeft, MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, BookOpen, Users, Star, ChevronLeft, MapPin, Phone, Mail, ExternalLink, Printer } from 'lucide-react';
 
 // French day names
 const FRENCH_DAY_NAMES: Record<number, string> = {
@@ -48,7 +48,7 @@ export default function VisitorSite() {
   return (
     <div className="min-h-screen">
       {/* ========== NAVBAR ========== */}
-      <nav className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
+      <nav className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100 no-print">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-3xl">🎭</span>
@@ -63,7 +63,7 @@ export default function VisitorSite() {
             <a href="#schedule" className="hover:text-primary transition-colors">استعمال الزمن</a>
             <a href="#program" className="hover:text-primary transition-colors">البرنامج</a>
             <a href="#plays" className="hover:text-primary transition-colors">المسرحيات</a>
-            <Link to="/" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1 text-xs">
+            <Link to="/admin" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1 text-xs">
               <ExternalLink size={14} />
               لوحة التحكم
             </Link>
@@ -72,7 +72,7 @@ export default function VisitorSite() {
       </nav>
 
       {/* ========== HERO ========== */}
-      <section id="home" className="relative overflow-hidden bg-gradient-to-bl from-primary via-primary-dark to-[#4a0e0e]">
+      <section id="home" className="relative overflow-hidden bg-gradient-to-bl from-primary via-primary-dark to-[#4a0e0e] no-print">
         {/* Decorative patterns */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 right-10 text-[200px] leading-none">🎭</div>
@@ -125,7 +125,7 @@ export default function VisitorSite() {
       </section>
 
       {/* ========== ABOUT ========== */}
-      <section id="about" className="py-16 md:py-24">
+      <section id="about" className="py-16 md:py-24 no-print">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-black text-text mb-3">عن ورشة المسرح</h2>
@@ -162,7 +162,7 @@ export default function VisitorSite() {
       </section>
 
       {/* ========== CLASSES ========== */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white no-print">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-black text-text mb-3">الأقسام المستفيدة</h2>
@@ -189,14 +189,21 @@ export default function VisitorSite() {
       {/* ========== SCHEDULE TABLE ========== */}
       <section id="schedule" className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 print:mb-6">
             <h2 className="text-3xl md:text-4xl font-black text-text mb-3">استعمال الزمن</h2>
-            <div className="w-20 h-1 bg-secondary mx-auto rounded-full mb-4"></div>
+            <div className="w-20 h-1 bg-secondary mx-auto rounded-full mb-4 no-print"></div>
             <p className="text-text-muted">EMPLOI DU TEMPS — THEATRE 2026/2027</p>
+            <button 
+              onClick={() => window.print()}
+              className="mt-6 mx-auto bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 no-print"
+            >
+              <Printer size={18} />
+              <span>طباعة الجدول</span>
+            </button>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-x-auto">
-            <table className="w-full border-collapse min-w-[850px]">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-x-auto print:shadow-none print:border-none">
+            <table className="w-full border-collapse min-w-[850px] print:min-w-full">
               <thead>
                 <tr>
                   <th className="border-2 border-gray-300 p-3 bg-gray-50 text-center w-28 relative h-14">
@@ -252,7 +259,7 @@ export default function VisitorSite() {
       </section>
 
       {/* ========== PROGRAM PHASES ========== */}
-      <section id="program" className="py-16 md:py-24 bg-white">
+      <section id="program" className="py-16 md:py-24 bg-white no-print">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-black text-text mb-3">البرنامج السنوي</h2>
@@ -304,7 +311,7 @@ export default function VisitorSite() {
 
       {/* ========== PLAYS / SCRIPTS ========== */}
       {scripts.length > 0 && (
-        <section id="plays" className="py-16 md:py-24">
+        <section id="plays" className="py-16 md:py-24 no-print">
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-black text-text mb-3">النصوص المسرحية</h2>
@@ -353,7 +360,7 @@ export default function VisitorSite() {
       )}
 
       {/* ========== FOOTER ========== */}
-      <footer className="bg-gradient-to-bl from-[#1a1a2e] to-[#16213e] text-white py-12">
+      <footer className="bg-gradient-to-bl from-[#1a1a2e] to-[#16213e] text-white py-12 no-print">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* About */}

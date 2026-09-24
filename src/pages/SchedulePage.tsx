@@ -10,7 +10,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Select from '../components/ui/Select';
-import { Plus, Edit, Clock, Calendar, LayoutGrid, List } from 'lucide-react';
+import { Plus, Edit, Clock, Calendar, LayoutGrid, List, Printer } from 'lucide-react';
 import { formatTime } from '../utils/dateUtils';
 
 const emptyClass: Omit<ClassSection, 'id' | 'order'> = {
@@ -129,7 +129,7 @@ export default function SchedulePage() {
 
   return (
     <div>
-      <Header title="استعمال الزمن" subtitle="EMPLOI DU TEMPS — THEATRE 2026/2027" actions={
+      <Header className="no-print" title="استعمال الزمن" subtitle="EMPLOI DU TEMPS — THEATRE 2026/2027" actions={
         <div className="flex gap-2">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex p-1 mr-2 hidden md:flex">
             <button
@@ -147,15 +147,21 @@ export default function SchedulePage() {
               <List size={18} />
             </button>
           </div>
+          <Button variant="secondary" onClick={() => window.print()} icon={<Printer size={18} />} className="hidden md:flex">طباعة</Button>
           <Button onClick={() => openAdd()} icon={<Plus size={18} />}>إضافة قسم</Button>
         </div>
       } />
 
       <div className="space-y-8">
+        <div className="print-only mb-6 text-center">
+          <h1 className="text-3xl font-bold mb-2">استعمال الزمن</h1>
+          <p className="text-gray-600 text-lg">EMPLOI DU TEMPS — THEATRE 2026/2027</p>
+        </div>
+
         {viewMode === 'table' ? (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-x-auto">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-x-auto print:border-none print:shadow-none">
             {/* Title bar */}
-            <div className="bg-gradient-to-l from-primary/10 to-primary/5 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div className="bg-gradient-to-l from-primary/10 to-primary/5 px-6 py-3 border-b border-gray-200 flex items-center justify-between no-print">
               <div className="flex items-center gap-2">
                 <Calendar size={20} className="text-primary" />
                 <span className="font-bold text-primary text-lg">EMPLOI DU TEMPS 2026/2027</span>
@@ -163,7 +169,7 @@ export default function SchedulePage() {
               <span className="text-sm font-semibold text-gray-600 bg-white px-3 py-1 rounded-full border">THEATRE</span>
             </div>
 
-            <table className="w-full border-collapse min-w-[900px]">
+            <table className="w-full border-collapse min-w-[900px] print:min-w-full">
               <thead>
                 <tr>
                   {/* Horaire / Jour corner cell */}
@@ -261,7 +267,7 @@ export default function SchedulePage() {
             </table>
 
             {/* Legend */}
-            <div className="px-6 py-3 border-t border-gray-200 flex items-center gap-6 text-xs text-gray-500">
+            <div className="px-6 py-3 border-t border-gray-200 flex items-center gap-6 text-xs text-gray-500 no-print">
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 bg-white border-2 border-gray-300 rounded"></div>
                 <span>حصة مبرمجة</span>

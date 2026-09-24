@@ -3,18 +3,18 @@ import { NavLink } from 'react-router-dom';
 import { Home, Calendar, GraduationCap, Clapperboard, MoreHorizontal, ClipboardList, BookOpen, BarChart3, TreePalm, Settings, X } from 'lucide-react';
 
 const mainItems = [
-  { to: '/', label: 'الرئيسية', icon: Home },
-  { to: '/schedule', label: 'الحصص', icon: Calendar },
-  { to: '/training', label: 'التداريب', icon: GraduationCap },
-  { to: '/scripts', label: 'النصوص', icon: Clapperboard },
+  { to: '/admin', label: 'الرئيسية', icon: Home },
+  { to: '/admin/schedule', label: 'الحصص', icon: Calendar },
+  { to: '/admin/training', label: 'التداريب', icon: GraduationCap },
+  { to: '/admin/scripts', label: 'النصوص', icon: Clapperboard },
 ];
 
 const moreItems = [
-  { to: '/training-log', label: 'سجل التداريب', icon: ClipboardList },
-  { to: '/program', label: 'البرنامج السنوي', icon: BookOpen },
-  { to: '/reports', label: 'التقارير', icon: BarChart3 },
-  { to: '/holidays', label: 'العطل المدرسية', icon: TreePalm },
-  { to: '/settings', label: 'الإعدادات', icon: Settings },
+  { to: '/admin/training-log', label: 'سجل التداريب', icon: ClipboardList },
+  { to: '/admin/program', label: 'البرنامج السنوي', icon: BookOpen },
+  { to: '/admin/reports', label: 'التقارير', icon: BarChart3 },
+  { to: '/admin/holidays', label: 'العطل المدرسية', icon: TreePalm },
+  { to: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ];
 
 export default function MobileNav() {
@@ -51,13 +51,13 @@ export default function MobileNav() {
       )}
 
       {/* Bottom nav bar */}
-      <nav className="fixed bottom-0 start-0 end-0 bg-white border-t border-border z-40 md:hidden">
+      <nav className="fixed bottom-0 start-0 end-0 bg-white border-t border-border z-40 md:hidden no-print">
         <div className="flex items-center justify-around py-2">
           {mainItems.map(item => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === '/'}
+              end={item.to === '/admin'}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 px-3 py-1 text-xs ${
                   isActive ? 'text-primary' : 'text-text-muted'
