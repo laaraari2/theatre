@@ -76,7 +76,6 @@ export default function TrainingLogPage() {
               <th className="text-start p-3 font-semibold text-text-muted">التاريخ</th>
               <th className="text-start p-3 font-semibold text-text-muted">القسم</th>
               <th className="text-start p-3 font-semibold text-text-muted">موضوع الحصة</th>
-              <th className="text-start p-3 font-semibold text-text-muted">التقنيات</th>
               <th className="text-start p-3 font-semibold text-text-muted">الحالة</th>
             </tr>
           </thead>
@@ -87,14 +86,6 @@ export default function TrainingLogPage() {
                 <td className="p-3 text-sm whitespace-nowrap">{formatDateArabic(s.date)}</td>
                 <td className="p-3 text-sm font-medium">{getClassName(s.classId)}</td>
                 <td className="p-3 text-sm text-text-muted max-w-[200px] truncate">{s.topic || '—'}</td>
-                <td className="p-3">
-                  <div className="flex flex-wrap gap-1">
-                    {s.techniques.slice(0, 3).map(t => (
-                      <span key={t} className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5">{TECHNIQUE_LABELS[t] || t}</span>
-                    ))}
-                    {s.techniques.length > 3 && <span className="text-[10px] text-text-muted">+{s.techniques.length - 3}</span>}
-                  </div>
-                </td>
                 <td className="p-3"><StatusBadge status={s.status} /></td>
               </tr>
             ))}
@@ -115,13 +106,6 @@ export default function TrainingLogPage() {
               <StatusBadge status={s.status} />
             </div>
             {s.topic && <div className="text-sm text-text mt-1 truncate">{s.topic}</div>}
-            {s.techniques.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {s.techniques.slice(0, 3).map(t => (
-                  <span key={t} className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5">{TECHNIQUE_LABELS[t]}</span>
-                ))}
-              </div>
-            )}
           </div>
         ))}
       </div>
