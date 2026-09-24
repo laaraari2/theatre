@@ -1,0 +1,124 @@
+import React, { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db/database';
+import { exportData, importData, resetDatabase } from '../db/backup';
+import { seedDatabase } from '../db/seeds';
+import Header from '../components/layout/Header';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { Save, Download, Upload, RefreshCw, Info } from 'lucide-react';
+
+export default function SettingsPage() {
+  const settings = useLiveQuery(() => db.settings.toCollection().first());
+  const [teacherName, setTeacherName] = useState('');
+  const [schoolName, setSchoolName] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Sync from DB
+  if (settings && !initialized) {
+    setTeacherName(settings.teacherName || '');
+    setSchoolName(settings.schoolName || '');
+    setInitialized(true);
+  }
+
+  const handleSaveInfo = async () => {
+    if (settings?.id) {
+      await db.settings.update(settings.id, { teacherName, schoolName });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
+
+  const handleExport = async () => {
+    const json = await exportData();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `masrahi-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      if (confirm('سيتم استبدال جميع البيانات الحالية. هل تريد المتابعة؟')) {
+        await importData(text);
+        window.location.reload();
+      }
+    };
+    input.click();
+  };
+
+  const handleReset = async () => {
+    if (!confirm('هل تريد حذف جميع البيانات وإعادة التعيين؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+    await resetDatabase();
+    await seedDatabase();
+    window.location.reload();
+  };
+
+  return (
+    <div>
+      <Header title="الإعدادات" />
+
+      {/* Teacher info */}
+      <Card className="mb-6">
+        <h2 className="text-lg font-bold mb-4">👤 معلومات الأستاذ</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-text mb-1">اسم الأستاذ</label>
+            <input type="text" value={teacherName} onChange={e => setTeacherName(e.target.value)}
+              placeholder="أدخل اسمك الكامل"
+              className="w-full rounded-lg border border-border p-3 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text mb-1">اسم المؤسسة</label>
+            <input type="text" value={schoolName} onChange={e => setSchoolName(e.target.value)}
+              placeholder="اسم المدرسة"
+              className="w-full rounded-lg border border-border p-3 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none" />
+          </div>
+          <Button onClick={handleSaveInfo} icon={<Save size={18} />}>
+            {saved ? '✅ تم الحفظ' : 'حفظ المعلومات'}
+          </Button>
+        </div>
+      </Card>
+
+      {/* Data management */}
+      <Card className="mb-6">
+        <h2 className="text-lg font-bold mb-4">💾 إدارة البيانات</h2>
+        <div className="space-y-3">
+          <Button variant="secondary" onClick={handleExport} icon={<Download size={18} />} className="w-full sm:w-auto">
+            تصدير البيانات (JSON)
+          </Button>
+          <Button variant="ghost" onClick={handleImport} icon={<Upload size={18} />} className="w-full sm:w-auto">
+            استيراد البيانات (JSON)
+          </Button>
+          <div className="pt-4 border-t border-border">
+            <Button variant="danger" onClick={handleReset} icon={<RefreshCw size={18} />} className="w-full sm:w-auto">
+              إعادة تعيين جميع البيانات
+            </Button>
+            <p className="text-xs text-text-muted mt-2">⚠️ سيتم حذف جميع البيانات وإعادة التطبيق إلى حالته الأولية</p>
+          </div>
+        </div>
+      </Card>
+
+      {/* About */}
+      <Card>
+        <h2 className="text-lg font-bold mb-3">ℹ️ حول التطبيق</h2>
+        <div className="space-y-2 text-sm text-text-muted">
+          <p><strong className="text-text">مسرحي</strong> — الإصدار 1.0.0</p>
+          <p>تطبيق لتدبير ورشة المسرح في التعليم الابتدائي بالمغرب</p>
+          <p>دفتر يومي رقمي لتتبع الحصص المسرحية وتدبير النصوص والتخطيط السنوي</p>
+          <p className="pt-2 text-xs">السنة الدراسية 2026/2027 🇲🇦</p>
+        </div>
+      </Card>
+    </div>
+  );
+}
