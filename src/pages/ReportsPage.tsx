@@ -10,7 +10,7 @@ import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import TextArea from '../components/ui/TextArea';
 import StatCard from '../components/ui/StatCard';
-import { BarChart3, Printer, CheckCircle2, Clock, AlertTriangle, XCircle, ChevronDown, ChevronUp, Save, CalendarDays, FileBarChart } from 'lucide-react';
+import { BarChart3, Printer, CheckCircle2, Clock, AlertTriangle, XCircle, ChevronDown, ChevronUp, Save, CalendarDays, FileBarChart, CheckSquare } from 'lucide-react';
 
 function DailyReportTab() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -128,6 +128,56 @@ function DailyReportTab() {
   );
 }
 
+function CompletedReportsTab() {
+  const sessions = useLiveQuery(() => db.sessions.where('status').equals('completed').reverse().sortBy('date')) ?? [];
+  const classes = useLiveQuery(() => db.classes.toArray()) ?? [];
+
+  const getClassName = (classId: number) => classes.find(c => c.id === classId)?.name || 'قسم غير معروف';
+
+  return (
+    <div className="space-y-4">
+      {sessions.length === 0 ? (
+        <Card className="text-center py-12 text-text-muted">
+          لا توجد تقارير منجزة بعد.
+        </Card>
+      ) : (
+        sessions.map(session => (
+          <Card key={session.id} className="space-y-3 border-s-4 border-s-success">
+            <div className="flex justify-between items-start border-b border-border pb-2 mb-2">
+              <div>
+                <h3 className="font-bold text-lg text-text">{getClassName(session.classId)}</h3>
+                <span className="text-sm text-text-muted">{session.date} — {session.startTime}</span>
+              </div>
+              <div className="bg-success/10 text-success px-2 py-1 rounded text-xs font-semibold">
+                منجزة
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs font-bold text-primary block mb-1">موضوع الحصة:</span>
+                <p className="text-sm text-text-muted bg-gray-50 p-2 rounded whitespace-pre-line">{session.topic || '—'}</p>
+              </div>
+              <div>
+                <span className="text-xs font-bold text-primary block mb-1">أهداف الحصة:</span>
+                <p className="text-sm text-text-muted bg-gray-50 p-2 rounded whitespace-pre-line">{session.objectives || '—'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <span className="text-xs font-bold text-primary block mb-1">سير الحصة (الأنشطة):</span>
+                <p className="text-sm text-text-muted bg-gray-50 p-2 rounded whitespace-pre-line">{session.activities || '—'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <span className="text-xs font-bold text-primary block mb-1">الملاحظات:</span>
+                <p className="text-sm text-text-muted bg-gray-50 p-2 rounded whitespace-pre-line">{session.teacherNotes || '—'}</p>
+              </div>
+            </div>
+          </Card>
+        ))
+      )}
+    </div>
+  );
+}
+
 function ClassReportsTab() {
   const classes = useLiveQuery(() => db.classes.orderBy('order').toArray()) ?? [];
   const [selectedClass, setSelectedClass] = useState('');
@@ -231,7 +281,7 @@ function ClassReportsTab() {
 }
 
 export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState<'daily' | 'class'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'completed' | 'class'>('daily');
 
   return (
     <div>
@@ -248,6 +298,15 @@ export default function ReportsPage() {
           <span>التقرير اليومي</span>
         </button>
         <button
+          onClick={() => setActiveTab('completed')}
+          className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-colors border-b-2 ${
+            activeTab === 'completed' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
+          }`}
+        >
+          <CheckSquare size={18} />
+          <span>التقارير المنجزة</span>
+        </button>
+        <button
           onClick={() => setActiveTab('class')}
           className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-colors border-b-2 ${
             activeTab === 'class' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
@@ -258,7 +317,9 @@ export default function ReportsPage() {
         </button>
       </div>
 
-      {activeTab === 'daily' ? <DailyReportTab /> : <ClassReportsTab />}
+      {activeTab === 'daily' && <DailyReportTab />}
+      {activeTab === 'completed' && <CompletedReportsTab />}
+      {activeTab === 'class' && <ClassReportsTab />}
     </div>
   );
 }
