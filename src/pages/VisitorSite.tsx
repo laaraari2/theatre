@@ -286,12 +286,23 @@ export default function VisitorSite() {
                       <p className="text-sm text-text-muted mb-4">{phase.description}</p>
                       <div className="space-y-3">
                         <div>
-                          <h4 className="text-xs font-bold text-primary mb-1.5">الأهداف</h4>
+                          <h4 className="text-xs font-bold text-primary mb-1.5">🎯 الأهداف</h4>
                           <ul className="space-y-1">
                             {phase.objectives.map((obj, j) => (
                               <li key={j} className="text-xs text-text-muted flex items-start gap-1.5">
                                 <span className="text-secondary mt-0.5">●</span>
                                 {obj}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="pt-2 border-t border-gray-100">
+                          <h4 className="text-xs font-bold text-accent mb-1.5">🎬 التداريب والأنشطة</h4>
+                          <ul className="space-y-2">
+                            {phase.activities.map((act, j) => (
+                              <li key={j} className="text-xs text-text-muted flex items-start gap-1.5 bg-white rounded-lg p-2 border border-gray-100">
+                                <span className="text-accent font-bold shrink-0">{j + 1}.</span>
+                                {act}
                               </li>
                             ))}
                           </ul>
