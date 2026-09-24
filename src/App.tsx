@@ -22,6 +22,12 @@ import { db } from './db/database';
 export default function App() {
   useEffect(() => {
     const initDB = async () => {
+      // Re-seed programs to apply the new detailed 4 exercises per phase
+      const programCount = await db.programs.count();
+      if (programCount > 0) {
+        await db.programs.clear();
+      }
+
       const classCount = await db.classes.count();
       // Re-seed if old defaults detected (4 old classes or 8 classes with wrong labels)
       if (classCount > 0 && classCount <= 8) {
