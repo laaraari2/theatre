@@ -4,11 +4,13 @@ import { db } from '../db/database';
 import { generateClassReport, type ClassReport } from '../services/reportGenerator';
 import { printReport } from '../services/pdfExporter';
 import type { TrainingSession } from '../types';
+import { THEATER_TECHNIQUES } from '../constants/techniques';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import TextArea from '../components/ui/TextArea';
+import MultiSelect from '../components/ui/MultiSelect';
 import StatCard from '../components/ui/StatCard';
 import { BarChart3, Printer, CheckCircle2, Clock, AlertTriangle, XCircle, ChevronDown, ChevronUp, Save, CalendarDays, FileBarChart, CheckSquare } from 'lucide-react';
 
@@ -30,6 +32,7 @@ function DailyReportTab() {
         topic: session.topic || '',
         objectives: session.objectives || '',
         activities: session.activities || '',
+        techniques: session.techniques || [],
         teacherNotes: session.teacherNotes || '',
       });
     }
@@ -102,6 +105,12 @@ function DailyReportTab() {
                       value={form.activities || ''} 
                       onChange={v => setForm({...form, activities: v})} 
                       rows={3}
+                    />
+                    <MultiSelect
+                      label="التقنيات المسرحية الموظفة"
+                      options={THEATER_TECHNIQUES.map(t => ({ value: t.id, label: t.label, icon: t.icon }))}
+                      selectedValues={(form.techniques as string[]) || []}
+                      onChange={v => setForm({...form, techniques: v})}
                     />
                     <TextArea 
                       label="الملاحظات" 

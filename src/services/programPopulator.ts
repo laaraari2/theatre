@@ -26,6 +26,7 @@ export async function populateProgram(): Promise<{ updated: number; skipped: num
           topic: entry.topic,
           objectives: entry.objectives,
           activities: entry.activities,
+          techniques: entry.techniques || [],
         });
         updated++;
       } else {
