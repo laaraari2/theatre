@@ -4,10 +4,11 @@ import { db } from '../db/database';
 import { exportData, importData, resetDatabase } from '../db/backup';
 import { seedDatabase } from '../db/seeds';
 import { changePassword } from '../services/authService';
+import { populateProgram } from '../services/programPopulator';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Save, Download, Upload, RefreshCw, Info, Lock } from 'lucide-react';
+import { Save, Download, Upload, RefreshCw, Info, Lock, BookOpen } from 'lucide-react';
 
 export default function SettingsPage() {
   const settings = useLiveQuery(() => db.settings.toCollection().first());
@@ -22,6 +23,10 @@ export default function SettingsPage() {
   const [confirmPwd, setConfirmPwd] = useState('');
   const [pwdMsg, setPwdMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [pwdLoading, setPwdLoading] = useState(false);
+
+  // Program population state
+  const [progLoading, setProgLoading] = useState(false);
+  const [progMsg, setProgMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Sync from DB
   if (settings && !initialized) {
@@ -89,6 +94,19 @@ export default function SettingsPage() {
     }
   };
 
+  const handlePopulateProgram = async () => {
+    if (!confirm('سيتم تعبئة مواضيع وأهداف وأنشطة الحصص من أكتوبر 2026 إلى يناير 2027 حسب البرنامج المعد. هل تريد المتابعة؟')) return;
+    setProgLoading(true);
+    try {
+      const result = await populateProgram();
+      setProgMsg({ type: 'success', text: `✅ تم تعبئة ${result.updated} حصة بنجاح (${result.skipped} تم تخطيها)` });
+      setTimeout(() => setProgMsg(null), 5000);
+    } catch (e) {
+      setProgMsg({ type: 'error', text: 'حدث خطأ أثناء تعبئة البرنامج' });
+    }
+    setProgLoading(false);
+  };
+
   return (
     <div>
       <Header title="الإعدادات" />
@@ -152,6 +170,26 @@ export default function SettingsPage() {
             {pwdLoading ? 'جاري التغيير...' : 'تغيير كلمة المرور'}
           </Button>
         </div>
+      </Card>
+
+      {/* Program Population */}
+      <Card className="mb-6">
+        <h2 className="text-lg font-bold mb-4"><BookOpen size={18} className="inline ml-1" /> تعبئة البرنامج الدراسي</h2>
+        <p className="text-sm text-text-muted mb-4">تعبئة مواضيع وأهداف وأنشطة جميع الحصص تلقائياً حسب البرنامج المعد من أكتوبر 2026 إلى 22 يناير 2027.</p>
+        {progMsg && (
+          <p className={`text-sm px-3 py-2 rounded-lg mb-3 ${
+            progMsg.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>{progMsg.text}</p>
+        )}
+        <Button
+          onClick={handlePopulateProgram}
+          icon={<BookOpen size={18} />}
+          disabled={progLoading}
+        >
+          {progLoading ? 'جاري التعبئة...' : 'تعبئة البرنامج'}
+        </Button>
       </Card>
 
       {/* Data management */}
