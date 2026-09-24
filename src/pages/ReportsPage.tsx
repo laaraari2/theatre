@@ -151,7 +151,7 @@ function ClassReportsTab() {
               options={classes.map(c => ({ value: String(c.id), label: c.name }))} placeholder="— اختر قسماً —" />
           </div>
           <Button onClick={handleGenerate} disabled={!selectedClass || loading} icon={<BarChart3 size={18} />}>
-            {loading ? 'جاري الإنشاء...' : 'إنشاء التقرير'}
+            {loading ? 'جاري المعاينة...' : 'معاينة التقرير'}
           </Button>
         </div>
       </Card>
