@@ -81,7 +81,7 @@ export default function TrainingLogPage() {
           </thead>
           <tbody>
             {sessions.map(s => (
-              <tr key={s.id} onClick={() => navigate(`/training/${s.id}`)}
+              <tr key={s.id} onClick={() => navigate(`/admin/training/${s.id}`)}
                 className="border-b border-border hover:bg-gray-50 cursor-pointer transition-colors">
                 <td className="p-3 text-sm whitespace-nowrap">{formatDateArabic(s.date)}</td>
                 <td className="p-3 text-sm font-medium">{getClassName(s.classId)}</td>
@@ -96,7 +96,7 @@ export default function TrainingLogPage() {
       {/* Mobile cards */}
       <div className="md:hidden space-y-2">
         {sessions.map(s => (
-          <div key={s.id} onClick={() => navigate(`/training/${s.id}`)}
+          <div key={s.id} onClick={() => navigate(`/admin/training/${s.id}`)}
             className="bg-bg-card rounded-lg border border-border p-3 cursor-pointer hover:shadow-sm">
             <div className="flex justify-between items-start">
               <div>

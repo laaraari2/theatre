@@ -158,12 +158,12 @@ export default function TrainingFormPage() {
         {/* Navigation between sessions */}
         <div className="flex items-center justify-between pt-4 pb-2">
           {prevSession ? (
-            <Button variant="ghost" size="sm" onClick={() => navigate(`/training/${prevSession.id}`)} icon={<ChevronRight size={16} />}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/training/${prevSession.id}`)} icon={<ChevronRight size={16} />}>
               الحصة السابقة
             </Button>
           ) : <div />}
           {nextSession ? (
-            <Button variant="ghost" size="sm" onClick={() => navigate(`/training/${nextSession.id}`)} icon={<ChevronLeft size={16} />}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/training/${nextSession.id}`)} icon={<ChevronLeft size={16} />}>
               الحصة التالية
             </Button>
           ) : <div />}

@@ -32,7 +32,7 @@ export default function ScriptsPage() {
   return (
     <div>
       <Header title="النصوص المسرحية" subtitle={`${filtered.length} نص`} actions={
-        <Button onClick={() => navigate('/scripts/new')} icon={<Plus size={18} />}>إضافة نص جديد</Button>
+        <Button onClick={() => navigate('/admin/scripts/new')} icon={<Plus size={18} />}>إضافة نص جديد</Button>
       } />
 
       {/* Level tabs */}
@@ -51,7 +51,7 @@ export default function ScriptsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(s => (
-          <Card key={s.id} onClick={() => navigate(`/scripts/${s.id}`)} hoverable>
+          <Card key={s.id} onClick={() => navigate(`/admin/scripts/${s.id}`)} hoverable>
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-text truncate">{s.title}</h3>
@@ -81,7 +81,7 @@ export default function ScriptsPage() {
           <p className="text-5xl mb-4">🎬</p>
           <p className="font-semibold">لا توجد نصوص مسرحية</p>
           <p className="text-sm mt-1">أضف أول نص مسرحي</p>
-          <Button className="mt-4" onClick={() => navigate('/scripts/new')}>إضافة نص</Button>
+          <Button className="mt-4" onClick={() => navigate('/admin/scripts/new')}>إضافة نص</Button>
         </div>
       )}
     </div>

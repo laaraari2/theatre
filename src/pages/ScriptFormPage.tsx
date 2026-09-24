@@ -43,13 +43,13 @@ export default function ScriptFormPage() {
     } else {
       await db.scripts.add({ ...form, createdAt: now, updatedAt: now } as TheaterScript);
     }
-    navigate('/scripts');
+    navigate('/admin/scripts');
   };
 
   return (
     <div>
       <Header title={isEdit ? 'تعديل النص المسرحي' : 'إضافة نص مسرحي جديد'}
-        actions={<Button variant="ghost" onClick={() => navigate('/scripts')} icon={<ArrowRight size={18} />}>رجوع</Button>} />
+        actions={<Button variant="ghost" onClick={() => navigate('/admin/scripts')} icon={<ArrowRight size={18} />}>رجوع</Button>} />
 
       <div className="space-y-1">
         <div className="mb-4">

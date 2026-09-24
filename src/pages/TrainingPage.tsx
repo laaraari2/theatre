@@ -92,7 +92,7 @@ export default function TrainingPage() {
                     s.isHoliday ? (
                       <div key={s.id} className="text-[10px] bg-amber-50 text-amber-700 rounded px-1 py-0.5 truncate">🏖️ {s.holidayName}</div>
                     ) : (
-                      <div key={s.id} onClick={() => navigate(`/training/${s.id}`)}
+                      <div key={s.id} onClick={() => navigate(`/admin/training/${s.id}`)}
                         className="text-[10px] bg-primary/5 hover:bg-primary/10 rounded px-1 py-0.5 cursor-pointer truncate border border-primary/10">
                         <span className="font-medium">{getClassName(s.classId)}</span>
                         <span className="text-text-muted ms-1">{s.startTime}</span>
