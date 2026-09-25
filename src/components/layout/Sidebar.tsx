@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Clapperboard, Calendar, GraduationCap, ClipboardList, BookOpen, BarChart3, TreePalm, Settings, LogOut } from 'lucide-react';
+import { Home, Clapperboard, Calendar, GraduationCap, ClipboardList, BookOpen, BarChart3, TreePalm, Settings, LogOut, Eye } from 'lucide-react';
 import { logout } from '../../services/authService';
 
 const navItems = [
@@ -58,11 +58,16 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="p-4 border-t border-border space-y-2">
+        {/* Preview visitor site */}
         <NavLink
           to="/"
-          className="flex items-center justify-center gap-2 text-xs bg-primary/10 text-primary px-3 py-2 rounded-lg hover:bg-primary/20 transition-colors font-medium"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full text-xs bg-accent/10 text-accent px-3 py-2.5 rounded-lg hover:bg-accent/20 transition-colors font-semibold border border-accent/20 group"
         >
-          🌐 <span>موقع الزوار</span>
+          <Eye size={14} className="group-hover:scale-110 transition-transform" />
+          <span>معاينة الموقع</span>
+          <span className="text-accent/50 text-[10px]">(في تبويب جديد)</span>
         </NavLink>
         <button
           onClick={handleLogout}

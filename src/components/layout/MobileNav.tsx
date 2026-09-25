@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Home, Calendar, GraduationCap, Clapperboard, MoreHorizontal, ClipboardList, BookOpen, BarChart3, TreePalm, Settings, X } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, Calendar, GraduationCap, Clapperboard, MoreHorizontal, ClipboardList, BookOpen, BarChart3, TreePalm, Settings, X, Eye, LogOut } from 'lucide-react';
+import { logout } from '../../services/authService';
 
 const mainItems = [
   { to: '/admin', label: 'الرئيسية', icon: Home },
@@ -19,6 +20,12 @@ const moreItems = [
 
 export default function MobileNav() {
   const [showMore, setShowMore] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <>
@@ -46,6 +53,31 @@ export default function MobileNav() {
                 <span>{item.label}</span>
               </NavLink>
             ))}
+
+            {/* Divider */}
+            <div className="border-t border-border my-1" />
+
+            {/* Preview site */}
+            <NavLink
+              to="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setShowMore(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-accent font-semibold bg-accent/5 hover:bg-accent/10 transition-colors"
+            >
+              <Eye size={20} />
+              <span>معاينة الموقع</span>
+              <span className="text-xs text-accent/50 mr-auto">(تبويب جديد)</span>
+            </NavLink>
+
+            {/* Logout */}
+            <button
+              onClick={() => { setShowMore(false); handleLogout(); }}
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-red-600 font-medium hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={20} />
+              <span>تسجيل الخروج</span>
+            </button>
           </div>
         </div>
       )}
