@@ -35,10 +35,8 @@ const SCHEDULE_DAYS = [1, 2, 4];
 export default function VisitorSite() {
   const classes = useLiveQuery(() => db.classes.orderBy('order').toArray()) ?? [];
   const settings = useLiveQuery(() => db.settings.toCollection().first());
-  const sessions = useLiveQuery(() => db.sessions.filter(s => !s.isHoliday).toArray()) ?? [];
   const scripts = useLiveQuery(() => db.scripts.toArray()) ?? [];
 
-  const completedCount = sessions.filter(s => s.status === 'completed').length;
   const morningSlots = FIXED_TIME_SLOTS.filter(s => s.period === 'morning');
   const afternoonSlots = FIXED_TIME_SLOTS.filter(s => s.period === 'afternoon');
 
@@ -96,7 +94,7 @@ export default function VisitorSite() {
           </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
               <div className="text-3xl font-black text-secondary">{classes.length}</div>
               <div className="text-sm text-white/70 mt-1">أقسام مستفيدة</div>
@@ -104,10 +102,6 @@ export default function VisitorSite() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
               <div className="text-3xl font-black text-secondary">3</div>
               <div className="text-sm text-white/70 mt-1">أيام في الأسبوع</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-              <div className="text-3xl font-black text-secondary">{completedCount}</div>
-              <div className="text-sm text-white/70 mt-1">حصة منجزة</div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
               <div className="text-3xl font-black text-secondary">{scripts.length}</div>
