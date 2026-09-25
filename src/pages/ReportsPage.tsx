@@ -3,14 +3,132 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { generateClassReport, type ClassReport } from '../services/reportGenerator';
 import { printReport } from '../services/pdfExporter';
+import type { TrainingSession } from '../types';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
+import TextArea from '../components/ui/TextArea';
 import StatCard from '../components/ui/StatCard';
-import { BarChart3, Printer, CheckCircle2, Clock, AlertTriangle, XCircle } from 'lucide-react';
+import { BarChart3, Printer, CheckCircle2, Clock, AlertTriangle, XCircle, ChevronDown, ChevronUp, Save, CalendarDays, FileBarChart } from 'lucide-react';
 
-export default function ReportsPage() {
+function DailyReportTab() {
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const sessions = useLiveQuery(() => db.sessions.where('date').equals(selectedDate).toArray(), [selectedDate]) ?? [];
+  const classes = useLiveQuery(() => db.classes.toArray()) ?? [];
+  
+  const [expandedSessionId, setExpandedSessionId] = useState<number | null>(null);
+  const [form, setForm] = useState<Partial<TrainingSession>>({});
+  const [saved, setSaved] = useState<number | null>(null);
+
+  const handleExpand = (session: TrainingSession) => {
+    if (expandedSessionId === session.id) {
+      setExpandedSessionId(null);
+    } else {
+      setExpandedSessionId(session.id!);
+      setForm({
+        topic: session.topic || '',
+        objectives: session.objectives || '',
+        activities: session.activities || '',
+        teacherNotes: session.teacherNotes || '',
+      });
+    }
+  };
+
+  const handleSave = async (sessionId: number) => {
+    await db.sessions.update(sessionId, {
+      ...form,
+      status: 'completed'
+    });
+    setSaved(sessionId);
+    setTimeout(() => setSaved(null), 2000);
+  };
+
+  const getClassName = (classId: number) => classes.find(c => c.id === classId)?.name || 'قسم غير معروف';
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex items-center gap-4">
+          <label className="font-semibold text-sm whitespace-nowrap">تاريخ اليوم:</label>
+          <input 
+            type="date" 
+            value={selectedDate} 
+            onChange={(e) => setSelectedDate(e.target.value)} 
+            className="border border-border rounded-lg p-2 flex-1 max-w-[200px] focus:ring-2 focus:ring-primary/30 outline-none text-sm"
+          />
+        </div>
+      </Card>
+
+      {sessions.length === 0 ? (
+        <Card className="text-center py-12 text-text-muted">
+          لا توجد حصص مبرمجة في هذا اليوم.
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {sessions.map(session => {
+            const isExpanded = expandedSessionId === session.id;
+            const isCompleted = session.status === 'completed';
+            return (
+              <Card key={session.id} className={`transition-all ${isExpanded ? 'border-primary shadow-md' : 'hover:border-primary/50'}`}>
+                <div 
+                  className="flex items-center justify-between cursor-pointer" 
+                  onClick={() => handleExpand(session)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${isCompleted ? 'bg-success' : 'bg-warning'}`}></div>
+                    <h3 className="font-bold text-lg">{getClassName(session.classId)}</h3>
+                    <span className="text-sm text-text-muted">({session.startTime})</span>
+                  </div>
+                  {isExpanded ? <ChevronUp size={20} className="text-text-muted" /> : <ChevronDown size={20} className="text-text-muted" />}
+                </div>
+
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <TextArea 
+                      label="موضوع الحصة" 
+                      value={form.topic || ''} 
+                      onChange={v => setForm({...form, topic: v})} 
+                      rows={1}
+                    />
+                    <TextArea 
+                      label="أهداف الحصة" 
+                      value={form.objectives || ''} 
+                      onChange={v => setForm({...form, objectives: v})} 
+                      rows={2}
+                    />
+                    <TextArea 
+                      label="سير الحصة" 
+                      value={form.activities || ''} 
+                      onChange={v => setForm({...form, activities: v})} 
+                      rows={3}
+                    />
+                    <TextArea 
+                      label="الملاحظات" 
+                      value={form.teacherNotes || ''} 
+                      onChange={v => setForm({...form, teacherNotes: v})} 
+                      rows={2}
+                    />
+                    <div className="flex justify-end pt-2">
+                      <Button 
+                        onClick={() => handleSave(session.id!)} 
+                        icon={<Save size={18} />}
+                      >
+                        {saved === session.id ? 'تم الحفظ بنجاح' : 'إنشاء'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ClassReportsTab() {
   const classes = useLiveQuery(() => db.classes.orderBy('order').toArray()) ?? [];
   const [selectedClass, setSelectedClass] = useState('');
   const [report, setReport] = useState<ClassReport | null>(null);
@@ -26,8 +144,6 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <Header title="التقارير" subtitle="استخراج تقارير عن التداريب" />
-
       <Card className="mb-6">
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           <div className="flex-1 w-full">
@@ -113,3 +229,37 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+export default function ReportsPage() {
+  const [activeTab, setActiveTab] = useState<'daily' | 'class'>('daily');
+
+  return (
+    <div>
+      <Header title="التقارير" subtitle="إدارة تقارير الحصص والتقارير الشاملة" />
+      
+      <div className="flex border-b border-border mb-6">
+        <button
+          onClick={() => setActiveTab('daily')}
+          className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-colors border-b-2 ${
+            activeTab === 'daily' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
+          }`}
+        >
+          <CalendarDays size={18} />
+          <span>التقرير اليومي</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('class')}
+          className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-colors border-b-2 ${
+            activeTab === 'class' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text'
+          }`}
+        >
+          <FileBarChart size={18} />
+          <span>تقارير الأقسام</span>
+        </button>
+      </div>
+
+      {activeTab === 'daily' ? <DailyReportTab /> : <ClassReportsTab />}
+    </div>
+  );
+}
+
