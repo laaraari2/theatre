@@ -100,6 +100,13 @@ export interface AppSettings {
   academicYearEnd: string;
 }
 
+export interface AdminAuth {
+  id?: number;
+  passwordHash: string; // SHA-256 hash
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const LEVELS = [
   'التعليم الأولي (MS/GS)',
   'الأول ابتدائي (CP)',

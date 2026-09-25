@@ -3,10 +3,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { exportData, importData, resetDatabase } from '../db/backup';
 import { seedDatabase } from '../db/seeds';
+import { changePassword } from '../services/authService';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Save, Download, Upload, RefreshCw, Info } from 'lucide-react';
+import { Save, Download, Upload, RefreshCw, Info, Lock } from 'lucide-react';
 
 export default function SettingsPage() {
   const settings = useLiveQuery(() => db.settings.toCollection().first());
@@ -14,6 +15,13 @@ export default function SettingsPage() {
   const [schoolName, setSchoolName] = useState('');
   const [saved, setSaved] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  // Password change state
+  const [currentPwd, setCurrentPwd] = useState('');
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [pwdMsg, setPwdMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [pwdLoading, setPwdLoading] = useState(false);
 
   // Sync from DB
   if (settings && !initialized) {
@@ -64,6 +72,23 @@ export default function SettingsPage() {
     window.location.reload();
   };
 
+  const handleChangePassword = async () => {
+    if (newPwd !== confirmPwd) {
+      setPwdMsg({ type: 'error', text: 'كلمتا المرور الجديدة غير متطابقتين' });
+      return;
+    }
+    setPwdLoading(true);
+    const result = await changePassword(currentPwd, newPwd);
+    setPwdLoading(false);
+    if (result.success) {
+      setPwdMsg({ type: 'success', text: '✅ تم تغيير كلمة المرور بنجاح' });
+      setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
+      setTimeout(() => setPwdMsg(null), 3000);
+    } else {
+      setPwdMsg({ type: 'error', text: result.error || 'حدث خطأ' });
+    }
+  };
+
   return (
     <div>
       <Header title="الإعدادات" />
@@ -86,6 +111,45 @@ export default function SettingsPage() {
           </div>
           <Button onClick={handleSaveInfo} icon={<Save size={18} />}>
             {saved ? '✅ تم الحفظ' : 'حفظ المعلومات'}
+          </Button>
+        </div>
+      </Card>
+
+      {/* Change Password */}
+      <Card className="mb-6">
+        <h2 className="text-lg font-bold mb-4"><Lock size={18} className="inline ml-1" />︎ كلمة المرور</h2>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-text mb-1">كلمة المرور الحالية</label>
+            <input type="password" value={currentPwd} onChange={e => setCurrentPwd(e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-border p-3 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text mb-1">كلمة المرور الجديدة</label>
+            <input type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)}
+              placeholder="6 أحرف على الأقل"
+              className="w-full rounded-lg border border-border p-3 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text mb-1">تأكيد كلمة المرور</label>
+            <input type="password" value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
+              placeholder="أعد كتابة كلمة المرور الجديدة"
+              className="w-full rounded-lg border border-border p-3 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none" />
+          </div>
+          {pwdMsg && (
+            <p className={`text-sm px-3 py-2 rounded-lg ${
+              pwdMsg.type === 'success'
+                ? 'bg-green-50 text-green-700 border border-green-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>{pwdMsg.text}</p>
+          )}
+          <Button
+            onClick={handleChangePassword}
+            icon={<Lock size={16} />}
+            disabled={pwdLoading || !currentPwd || !newPwd || !confirmPwd}
+          >
+            {pwdLoading ? 'جاري التغيير...' : 'تغيير كلمة المرور'}
           </Button>
         </div>
       </Card>

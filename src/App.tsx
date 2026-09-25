@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { seedDatabase, seedScripts } from './db/seeds';
+import { initAdminAuth } from './services/authService';
 
 import AppLayout from './components/layout/AppLayout';
 import VisitorLayout from './components/layout/VisitorLayout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import SchedulePage from './pages/SchedulePage';
 import TrainingPage from './pages/TrainingPage';
@@ -22,6 +25,9 @@ import { db } from './db/database';
 export default function App() {
   useEffect(() => {
     const initDB = async () => {
+      // Initialize admin auth first
+      await initAdminAuth();
+
       // Re-seed programs to apply the new detailed 4 exercises per phase
       const programCount = await db.programs.count();
       if (programCount > 0) {
@@ -57,20 +63,25 @@ export default function App() {
           <Route index element={<VisitorSite />} />
         </Route>
 
-        {/* لوحة التحكم */}
-        <Route path="admin" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="schedule" element={<SchedulePage />} />
-          <Route path="training" element={<TrainingPage />} />
-          <Route path="training/:id" element={<TrainingFormPage />} />
-          <Route path="training-log" element={<TrainingLogPage />} />
-          <Route path="scripts" element={<ScriptsPage />} />
-          <Route path="scripts/new" element={<ScriptFormPage />} />
-          <Route path="scripts/:id" element={<ScriptFormPage />} />
-          <Route path="program" element={<ProgramPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="holidays" element={<HolidaysPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+        {/* صفحة تسجيل الدخول */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* لوحة التحكم — محمية */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="admin" element={<AppLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="schedule" element={<SchedulePage />} />
+            <Route path="training" element={<TrainingPage />} />
+            <Route path="training/:id" element={<TrainingFormPage />} />
+            <Route path="training-log" element={<TrainingLogPage />} />
+            <Route path="scripts" element={<ScriptsPage />} />
+            <Route path="scripts/new" element={<ScriptFormPage />} />
+            <Route path="scripts/:id" element={<ScriptFormPage />} />
+            <Route path="program" element={<ProgramPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="holidays" element={<HolidaysPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

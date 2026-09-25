@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Home, Clapperboard, Calendar, GraduationCap, ClipboardList, BookOpen, BarChart3, TreePalm, Settings } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, Clapperboard, Calendar, GraduationCap, ClipboardList, BookOpen, BarChart3, TreePalm, Settings, LogOut } from 'lucide-react';
+import { logout } from '../../services/authService';
 
 const navItems = [
   { to: '/admin', label: 'الرئيسية', icon: Home },
@@ -15,6 +16,12 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
   return (
     <aside className="hidden md:flex flex-col w-64 bg-bg-card border-s border-border h-screen sticky top-0 shrink-0 no-print">
       {/* Logo */}
@@ -57,6 +64,13 @@ export default function Sidebar() {
         >
           🌐 <span>موقع الزوار</span>
         </NavLink>
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center gap-2 w-full text-xs text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors font-medium border border-red-200"
+        >
+          <LogOut size={14} />
+          <span>تسجيل الخروج</span>
+        </button>
         <div className="text-center text-xs text-text-muted">
           السنة الدراسية 2026/2027
         </div>
