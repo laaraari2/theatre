@@ -296,17 +296,6 @@ export default function VisitorSite() {
                             ))}
                           </ul>
                         </div>
-                        <div className="pt-2 border-t border-gray-100">
-                          <h4 className="text-xs font-bold text-accent mb-1.5">🎬 التداريب والأنشطة</h4>
-                          <ul className="space-y-2">
-                            {phase.activities.map((act, j) => (
-                              <li key={j} className="text-xs text-text-muted flex items-start gap-1.5 bg-white rounded-lg p-2 border border-gray-100">
-                                <span className="text-accent font-bold shrink-0">{j + 1}.</span>
-                                {act}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
                       </div>
                     </div>
                   </div>
