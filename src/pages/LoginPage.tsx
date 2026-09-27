@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
 import { isSupabaseConfigured, loginWithSupabase } from '../services/supabaseAuthService';
-import { Lock, Eye, EyeOff, Theater } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -54,8 +54,12 @@ export default function LoginPage() {
       <div className={`login-card ${shake ? 'shake' : ''}`}>
         {/* Logo / Brand */}
         <div className="login-brand">
-          <div className="login-icon-wrap">
-            <Theater size={32} strokeWidth={1.5} />
+          <div className="login-icon-wrap overflow-hidden rounded-full">
+            <img
+              src="/laaraari.jpeg"
+              alt="الأستاذ مصطفى لعرعري"
+              className="w-full h-full object-cover"
+            />
           </div>
           <h1 className="login-title">مسرحي</h1>
           <p className="login-subtitle">{isSupabaseConfigured() ? 'دخول الأستاذ أو المدير' : 'لوحة تحكم الأستاذ'}</p>
