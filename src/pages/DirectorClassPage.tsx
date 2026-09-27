@@ -75,6 +75,7 @@ export default function DirectorClassPage() {
         class_id: s.classId,
         session_number: s.sessionNumber,
       }));
+  const localScriptIds = new Set(localSessions.map(s => s.scriptId).filter(Boolean));
   const localScripts = useLiveQuery(
     () => localScriptIds.size ? db.scripts.toArray() : [],
     [classId, localSessions.length, Array.from(localScriptIds).join(',')],
@@ -100,8 +101,6 @@ export default function DirectorClassPage() {
   const scheduled = sessions.filter((s: any) => s.status === 'scheduled').length;
   const postponed = sessions.filter((s: any) => s.status === 'postponed').length;
   const cancelled = sessions.filter((s: any) => s.status === 'cancelled').length;
-
-  const localScriptIds = new Set(localSessions.map(s => s.scriptId).filter(Boolean));
 
 
   return (
