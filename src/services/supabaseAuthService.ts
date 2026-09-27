@@ -1,4 +1,4 @@
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '');
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const STORAGE_KEY = 'masrahi_supabase_session';
 
