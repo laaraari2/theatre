@@ -6,6 +6,7 @@ import { initAdminAuth } from './services/authService';
 import AppLayout from './components/layout/AppLayout';
 import VisitorLayout from './components/layout/VisitorLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import DirectorRoute from './components/auth/DirectorRoute';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import SchedulePage from './pages/SchedulePage';
@@ -19,6 +20,8 @@ import ReportsPage from './pages/ReportsPage';
 import HolidaysPage from './pages/HolidaysPage';
 import SettingsPage from './pages/SettingsPage';
 import VisitorSite from './pages/VisitorSite';
+import DirectorClassPage from './pages/DirectorClassPage';
+import DirectorScriptPage from './pages/DirectorScriptPage';
 
 import { db } from './db/database';
 
@@ -65,6 +68,12 @@ export default function App() {
 
         {/* صفحة تسجيل الدخول */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* المدير: نفس الواجهة العامة، مع تقارير الأقسام والنصوص */}
+        <Route element={<DirectorRoute />}>
+          <Route path="/director/class/:id" element={<DirectorClassPage />} />
+          <Route path="/director/script/:id" element={<DirectorScriptPage />} />
+        </Route>
 
         {/* لوحة التحكم — محمية */}
         <Route element={<ProtectedRoute />}>

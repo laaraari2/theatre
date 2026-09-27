@@ -4,6 +4,7 @@ import { db } from '../db/database';
 import { exportData, importData, resetDatabase } from '../db/backup';
 import { seedDatabase } from '../db/seeds';
 import { changePassword } from '../services/authService';
+import { isSupabaseConfigured, supabaseRestRequest } from '../services/supabaseAuthService';
 import { populateProgram } from '../services/programPopulator';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
@@ -27,6 +28,9 @@ export default function SettingsPage() {
   // Program population state
   const [progLoading, setProgLoading] = useState(false);
   const [progMsg, setProgMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Sync from DB
   if (settings && !initialized) {
@@ -91,6 +95,106 @@ export default function SettingsPage() {
       setTimeout(() => setPwdMsg(null), 3000);
     } else {
       setPwdMsg({ type: 'error', text: result.error || 'حدث خطأ' });
+    }
+  };
+
+  const handleSupabaseSync = async () => {
+    if (!isSupabaseConfigured()) {
+      setSyncMsg({ type: 'error', text: 'أضف إعدادات Supabase في Vercel أولاً: VITE_SUPABASE_URL و VITE_SUPABASE_PUBLISHABLE_KEY.' });
+      return;
+    }
+
+    setSyncLoading(true);
+    setSyncMsg(null);
+
+    try {
+      const [classes, scripts, sessions, holidays] = await Promise.all([
+        db.classes.toArray(),
+        db.scripts.toArray(),
+        db.sessions.toArray(),
+        db.holidays.toArray(),
+      ]);
+
+      const upsert = async (table: string, rows: unknown[]) => {
+        if (!rows.length) return;
+        await supabaseRestRequest(table + '?on_conflict=id', {
+          method: 'POST',
+          headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify(rows),
+        });
+      };
+
+      await upsert('classes', classes.map(c => ({
+        id: c.id,
+        name: c.name,
+        level: c.level,
+        day_of_week: c.dayOfWeek,
+        start_time: c.startTime,
+        duration: c.duration,
+        sort_order: c.order ?? 0,
+        is_public: true,
+      })));
+
+      await upsert('scripts', scripts.map(s => ({
+        id: s.id,
+        title: s.title,
+        level: s.level,
+        duration: s.duration,
+        character_count: s.characterCount ?? 0,
+        characters: s.characters ?? '',
+        full_text: s.fullText ?? '',
+        scenes: s.scenes ?? '',
+        direction_notes: s.directionNotes ?? '',
+        staging_notes: s.stagingNotes ?? '',
+        sound_effects: s.soundEffects ?? '',
+        music: s.music ?? '',
+        lighting: s.lighting ?? '',
+        scenography: s.scenography ?? '',
+        accessories: s.accessories ?? '',
+        techniques: s.techniques ?? [],
+      })));
+
+      await upsert('sessions', sessions.map(s => ({
+        id: s.id,
+        class_id: s.classId,
+        date: s.date,
+        start_time: s.startTime,
+        duration: s.duration,
+        topic: s.topic ?? '',
+        objectives: s.objectives ?? '',
+        activities: s.activities ?? '',
+        techniques: s.techniques ?? [],
+        teacher_notes: s.teacherNotes ?? '',
+        difficulties: s.difficulties ?? '',
+        students_needing_support: s.studentsNeedingSupport ?? '',
+        next_session_plan: s.nextSessionPlan ?? '',
+        script_id: s.scriptId ?? null,
+        scene_info: s.sceneInfo ?? '',
+        status: s.status,
+        session_number: s.sessionNumber ?? 1,
+        is_holiday: s.isHoliday ?? false,
+        holiday_name: s.holidayName ?? null,
+      })));
+
+      await upsert('holidays', holidays.map(h => ({
+        id: h.id,
+        name: h.name,
+        start_date: h.startDate,
+        end_date: h.endDate,
+        type: h.type,
+      })));
+
+      setSyncMsg({
+        type: 'success',
+        text: `✅ تمت المزامنة: ${classes.length} أقسام، ${sessions.length} حصة، ${scripts.length} نصوص، ${holidays.length} عطل.`,
+      });
+    } catch (e) {
+      setSyncMsg({
+        type: 'error',
+        text: e instanceof Error ? e.message : 'تعذر مزامنة البيانات مع Supabase.',
+      });
+    } finally {
+      setSyncLoading(false);
     }
   };
 
@@ -189,6 +293,28 @@ export default function SettingsPage() {
           disabled={progLoading}
         >
           {progLoading ? 'جاري التعبئة...' : 'تعبئة البرنامج'}
+        </Button>
+      </Card>
+
+      {/* Supabase sync */}
+      <Card className="mb-6">
+        <h2 className="text-lg font-bold mb-3">☁️ مزامنة Supabase</h2>
+        <p className="text-sm text-text-muted mb-4">
+          نقل الأقسام والحصص والنصوص والعطل الحالية إلى قاعدة Supabase مع الحفاظ على المعرّفات والروابط.
+        </p>
+        {syncMsg && (
+          <p className={`text-sm px-3 py-2 rounded-lg mb-3 ${
+            syncMsg.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>{syncMsg.text}</p>
+        )}
+        <Button
+          onClick={handleSupabaseSync}
+          icon={<RefreshCw size={18} />}
+          disabled={syncLoading}
+        >
+          {syncLoading ? 'جاري المزامنة...' : 'مزامنة البيانات مع Supabase'}
         </Button>
       </Card>
 
