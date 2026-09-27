@@ -27,8 +27,27 @@ export default function TrainingFormPage() {
   const [form, setForm] = useState<Partial<TrainingSession>>({});
   const [saved, setSaved] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [openActivity, setOpenActivity] = useState<string | null>(null);
 
   const difficultyOptions = ['الخجل وعدم الجرأة','صعوبة التركيز','صعوبة فهم التعليمات','صعوبة التعبير بالحركة','صعوبة التعبير بالصوت','قلة المشاركة','التشتت داخل المجموعة','صعوبة احترام الدور','صعوبة العمل الجماعي','صعوبة الحفظ أو التذكر','لا توجد صعوبات'];
+  const activityGuides: Record<string, { title: string; how: string; goal: string }> = {
+    'الاستقبال والتهيئة': { title:'الاستقبال والتهيئة', how:'يقف التلاميذ في دائرة. رحّب بهم وذكّرهم بقواعد المسرح: الاستماع، احترام الدور، وعدم السخرية من الآخرين. ثم خذ نفساً عميقاً وحضّر المجموعة للحصة.', goal:'خلق جو آمن ومريح والاستعداد للعمل الجماعي.' },
+    'مرآتي': { title:'تمرين مرآتي', how:'قسّم التلاميذ إلى ثنائيات. تلميذ يقوم بحركات بطيئة، والثاني يقلّده كأنه مرآة. بعد دقيقة يتبادلان الأدوار.', goal:'تنمية التركيز والانتباه والتواصل غير اللفظي.' },
+    'تمثال': { title:'تمرين تمثال', how:'اطلب من التلاميذ المشي بحرية. عندما تقول «تمثال» يتوقف كل واحد في وضعية ثابتة. غيّر الوضعيات: فرح، خوف، حيوان، بطل...', goal:'التحكم في الجسد والتعبير الجسدي.' },
+    'المشي في الفضاء': { title:'المشي في الفضاء', how:'يتمشى التلاميذ في الفضاء دون الاصطدام ببعضهم. غيّر السرعة والإيقاع واطلب منهم تغيير الاتجاه عند الإشارة.', goal:'اكتشاف الفضاء وتنمية الانتباه للمجموعة.' },
+    'نمشي بحال': { title:'نمشي بحال...', how:'اقترح شخصيات أو حيوانات: أسد، قطة، عجوز، روبوت... وعلى التلميذ تغيير طريقة المشي والجسد حسب الشخصية.', goal:'تنمية الخيال والتعبير بالجسد.' },
+    'حكاية جماعية': { title:'حكاية جماعية بالحركة', how:'ابدأ حكاية بسيطة، وكل تلميذ يضيف حركة أو حدثاً. المجموعة تمثل الحكاية بالحركة دون الحاجة إلى حفظ نص.', goal:'تنمية الخيال والتعاون وبناء حكاية جماعية.' },
+    'المشاعر في الجسد': { title:'المشاعر في الجسد', how:'سمِّ شعوراً مثل الفرح أو الخوف أو الغضب. يعبّر التلاميذ عنه بالجسد والوجه دون كلام، ثم يناقشون كيف تغيّر الجسد.', goal:'التعرف على المشاعر وترجمتها إلى أداء مسرحي.' },
+    'تمرين الصوت والمسافة': { title:'تمرين الصوت والمسافة', how:'يقف التلميذ في مسافات مختلفة عن زميله ويقول جملة قصيرة بوضوح، مع تغيير قوة الصوت حسب المسافة دون صراخ.', goal:'التحكم في الصوت والإسقاط الصوتي.' },
+    'من أنا؟': { title:'من أنا؟ بالحركة والصوت', how:'يختار التلميذ شخصية ويقدمها بحركة وصوت دون ذكر اسمها، ويحاول باقي التلاميذ اكتشاف الشخصية.', goal:'بناء شخصية واستعمال الجسد والصوت معاً.' },
+    'مشهد في 3 صور': { title:'مشهد في 3 صور', how:'في مجموعات صغيرة، اصنعوا مشهداً من ثلاث وضعيات ثابتة: البداية، الوسط، النهاية. يلاحظ الآخرون القصة ويحاولون تفسيرها.', goal:'تنمية بناء المشهد والعمل الجماعي.' },
+    'المشي بالشخصية': { title:'المشي بالشخصية', how:'اختر شخصية مثل شرطي، تاجر، طفل، ملك... واطلب من التلميذ تغيير المشية، الوقفة والإيقاع ليصبح هو الشخصية.', goal:'اكتشاف أن الشخصية تبنى من الجسد والحركة.' },
+    'نفس الجملة': { title:'نفس الجملة بشخصيات مختلفة', how:'يعطي الأستاذ جملة واحدة. يقولها التلميذ كأنه طفل، عجوز، شخص غاضب، شخص خائف أو سعيد، مع تغيير الأداء فقط.', goal:'تطوير المرونة في الأداء وبناء الشخصية.' },
+    'نعم، ولكن': { title:'نعم، ولكن...', how:'في ثنائي، يقترح الأول فكرة للمشهد. على الثاني أن يقبل الفكرة ويضيف إليها باستعمال «نعم، ولكن...»، ثم يستمر الحوار لبناء المشهد.', goal:'تنمية الارتجال والاستماع وقبول أفكار الشريك.' },
+    'ارتجال ثنائي': { title:'ارتجال ثنائي قصير', how:'أعطِ كل ثنائي موقفاً بسيطاً: لقاء صديقين، مشكل في القسم، ضياع شيء... يمنحهم وقتاً قصيراً للتحضير ثم يمثلون.', goal:'تطوير التفاعل والحوار والارتجال.' },
+    'بناء شخصية': { title:'بناء شخصية من حركة وصوت', how:'يختار التلميذ شخصية ويحدد لها مشية وصوتاً وحركة مميزة، ثم يقدمها أمام المجموعة.', goal:'ربط الجسد والصوت لصناعة شخصية واضحة.' },
+  };
+
   const lessonPlans: Record<string, { topic: string; objectives: string[]; activities: string[]; skills: string[] }> = {
     CP: { topic:'اكتشاف المسرح والتعبير بالجسد', objectives:['التعرف على فضاء المسرح وقواعد العمل الجماعي','تنمية الجرأة والثقة في التعبير أمام الآخرين','استعمال الجسد والحركة للتعبير','تنمية التركيز والانتباه والاستماع'], activities:['الاستقبال والتهيئة — 5 د','مرآتي — 5 د','تمثال — 5 د','المشي في الفضاء — 7 د','نمشي بحال... — 5 د','حكاية جماعية بالحركة — 8 د'], skills:['التركيز','التعبير الجسدي','الجرأة','الخيال','المشاركة'] },
     CE2: { topic:'الجسد والصوت في الفضاء المسرحي', objectives:['التحكم في الحركة داخل فضاء المسرح','التعبير عن المشاعر بواسطة الجسد','استعمال الصوت بوضوح وبدرجات مختلفة','تنمية الخيال والقدرة على التفاعل مع المجموعة'], activities:['المشي في الفضاء وتغيير السرعة — 5 د','المشاعر في الجسد — 5 د','تمرين الصوت والمسافة — 5 د','من أنا؟ بالحركة والصوت — 7 د','مشهد في 3 صور — 8 د'], skills:['الصوت','الحركة','التعبير عن المشاعر','الخيال','التعاون'] },
@@ -176,7 +195,21 @@ export default function TrainingFormPage() {
           <div className="space-y-4">
             <div><div className="text-xs font-semibold text-text-muted mb-1">الموضوع</div><div className="font-bold text-primary">{lessonPlans[cls?.name || ''].topic}</div></div>
             <div><div className="text-xs font-semibold text-text-muted mb-2">الأهداف</div>{lessonPlans[cls?.name || ''].objectives.map(x => <div key={x} className="flex gap-2 text-sm mb-1"><span>🎯</span><span>{x}</span></div>)}</div>
-            <div><div className="text-xs font-semibold text-text-muted mb-2">مراحل وأنشطة الحصة</div>{lessonPlans[cls?.name || ''].activities.map(x => <div key={x} className="flex gap-2 text-sm mb-1"><span>🎭</span><span>{x}</span></div>)}</div>
+            <div><div className="text-xs font-semibold text-text-muted mb-2">مراحل وأنشطة الحصة</div>{lessonPlans[cls?.name || ''].activities.map(x => {
+                    const key = Object.keys(activityGuides).find(k => x.startsWith(k));
+                    const guide = key ? activityGuides[key] : null;
+                    const isOpen = openActivity === x;
+                    return <div key={x} className="rounded-lg border border-border overflow-hidden">
+                      <button type="button" onClick={() => setOpenActivity(isOpen ? null : x)} className="w-full flex items-center justify-between gap-2 p-3 text-sm text-start hover:bg-surface-alt">
+                        <span className="flex gap-2"><span>🎭</span><span>{x}</span></span>
+                        <span className="text-primary font-bold">{isOpen ? '−' : '+'}</span>
+                      </button>
+                      {isOpen && guide && <div className="border-t border-border bg-surface-alt p-4 text-sm space-y-2">
+                        <div><span className="font-bold">كيفاش ندير التدريب؟</span><p className="mt-1 text-text-muted leading-6">{guide.how}</p></div>
+                        <div><span className="font-bold">الهدف من التدريب:</span><p className="mt-1 text-text-muted">{guide.goal}</p></div>
+                      </div>}
+                    </div>;
+                  })}</div>
             <div><div className="text-xs font-semibold text-text-muted mb-2">المهارات المستهدفة</div><div className="flex flex-wrap gap-2">{lessonPlans[cls?.name || ''].skills.map(x => <span key={x} className="rounded-full bg-white border border-border px-2.5 py-1 text-xs">{x}</span>)}</div></div>
           </div>
         </Card>}
