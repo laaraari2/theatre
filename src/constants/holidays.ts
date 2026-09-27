@@ -13,6 +13,6 @@ export const DEFAULT_HOLIDAYS: Omit<Holiday, 'id'>[] = [
 
 export const ACADEMIC_YEAR = {
   start: '2026-09-28',
-  end: '2027-07-03',
+  end: '2027-05-30',
   label: '2026/2027',
 };
