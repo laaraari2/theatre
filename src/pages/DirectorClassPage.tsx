@@ -132,7 +132,7 @@ export default function DirectorClassPage() {
             <FileText size={20} className="text-secondary" />
             <h2 className="text-lg font-black text-text">تقارير الحصص المنفذة</h2>
           </div>
-          <p className="text-sm text-text-muted mb-4">التقرير لا يظهر هنا إلا بعد الضغط على «نفذت الحصة — إنشاء التقرير».</p>
+          <p className="text-sm text-text-muted mb-4">التقرير يظهر هنا فقط بعد تأكيد تنفيذ الحصة، ويعرض الخلاصة والأهداف والملاحظات والصعوبات وخطة الحصة القادمة.</p>
 
           {completedSessions.length === 0 ? (
             <div className="py-12 text-center">
@@ -166,16 +166,10 @@ export default function DirectorClassPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="bg-gray-50 rounded-xl p-3"><div className="text-[11px] font-bold text-primary mb-1">موضوع الحصة</div><div className="text-sm text-text whitespace-pre-line">{topic}</div></div>
                       <div className="bg-gray-50 rounded-xl p-3"><div className="text-[11px] font-bold text-primary mb-1">أهداف الحصة</div><div className="text-sm text-text whitespace-pre-line">{session.objectives || '—'}</div></div>
-                      <div className="bg-gray-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-primary mb-1">سير الحصة</div><div className="text-sm text-text-muted whitespace-pre-line">{session.activities || '—'}</div></div>
-                      <div className="bg-gray-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-primary mb-1">ملاحظات الأستاذ</div><div className="text-sm text-text-muted whitespace-pre-line">{notes || '—'}</div></div>
-                      {session.difficulties && <div className="bg-amber-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-amber-700 mb-1">الصعوبات</div><div className="text-sm text-text-muted whitespace-pre-line">{session.difficulties}</div></div>}
+                      <div className="bg-gray-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-primary mb-1">خلاصة الأستاذ</div><div className="text-sm text-text-muted whitespace-pre-line">{notes || '—'}</div></div>
+                      {session.difficulties && <div className="bg-amber-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-amber-700 mb-1">الصعوبات التي تمت ملاحظتها</div><div className="text-sm text-text-muted whitespace-pre-line">{session.difficulties}</div></div>}
                       {session.next_session_plan && <div className="bg-blue-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-blue-700 mb-1">خطة الحصة القادمة</div><div className="text-sm text-text-muted whitespace-pre-line">{session.next_session_plan}</div></div>}
                     </div>
-                    {session.techniques?.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {session.techniques.map((tech: string) => <span key={tech} className="px-2 py-1 rounded-full text-[10px] bg-secondary/10 text-secondary-light">{tech}</span>)}
-                      </div>
-                    )}
                   </div>
                 );
               })}
