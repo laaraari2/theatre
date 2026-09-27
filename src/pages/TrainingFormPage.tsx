@@ -12,8 +12,8 @@ import Button from '../components/ui/Button';
 import TextArea from '../components/ui/TextArea';
 import Select from '../components/ui/Select';
 import MultiSelect from '../components/ui/MultiSelect';
-import StatusBadge from '../components/shared/StatusBadge';
-import { Save, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { Save, ChevronLeft, ChevronRight, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { supabaseRestRequest } from '../services/supabaseAuthService';
 
 export default function TrainingFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +26,7 @@ export default function TrainingFormPage() {
 
   const [form, setForm] = useState<Partial<TrainingSession>>({});
   const [saved, setSaved] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const classId = session?.classId;
   const classSessions = useLiveQuery(
@@ -60,10 +61,48 @@ export default function TrainingFormPage() {
   const prevSession = currentIdx > 0 ? classSessions[currentIdx - 1] : null;
   const nextSession = currentIdx < classSessions.length - 1 ? classSessions[currentIdx + 1] : null;
 
+  const syncCompletedSession = async (completedForm: Partial<TrainingSession>) => {
+    try {
+      await supabaseRestRequest(
+        `sessions?class_id=eq.${session.classId}&date=eq.${session.date}`,
+        {
+          method: 'PATCH',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            status: 'completed',
+            topic: completedForm.topic || '',
+            objectives: completedForm.objectives || '',
+            activities: completedForm.activities || '',
+            techniques: completedForm.techniques || [],
+            teacher_notes: completedForm.teacherNotes || '',
+            difficulties: completedForm.difficulties || '',
+            students_needing_support: completedForm.studentsNeedingSupport || '',
+            next_session_plan: completedForm.nextSessionPlan || '',
+            script_id: completedForm.scriptId ?? null,
+            scene_info: completedForm.sceneInfo || '',
+          }),
+        },
+      );
+    } catch {
+      // Local completion remains available when Supabase is not configured.
+    }
+  };
+
   const handleSave = async () => {
     await db.sessions.update(sessionId, form);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleComplete = async () => {
+    setCompleting(true);
+    const completedForm = { ...form, status: 'completed' as SessionStatus };
+    await db.sessions.update(sessionId, completedForm);
+    await syncCompletedSession(completedForm);
+    setForm(completedForm);
+    setSaved(true);
+    setCompleting(false);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   const set = (key: string, value: unknown) => setForm(prev => ({ ...prev, [key]: value }));
@@ -83,6 +122,7 @@ export default function TrainingFormPage() {
   }
 
   const linkedScript = form.scriptId ? scripts.find(s => s.id === form.scriptId) : null;
+  const isCompleted = form.status === 'completed';
 
   return (
     <div>
@@ -91,7 +131,6 @@ export default function TrainingFormPage() {
         actions={<Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowRight size={18} />}>رجوع</Button>}
       />
 
-      {/* Session info banner */}
       <Card className="mb-4 bg-gradient-to-l from-primary/5 to-transparent border-s-4 border-s-primary">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
           <div><span className="text-text-muted">📅 التاريخ:</span><div className="font-semibold">{formatDateFull(session.date)}</div></div>
@@ -111,9 +150,13 @@ export default function TrainingFormPage() {
             <span className="font-semibold ms-1">{linkedScript.title}</span>
           </div>
         )}
+        {isCompleted && (
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-green-50 text-green-700 px-3 py-1.5 text-xs font-bold">
+            <CheckCircle2 size={15} /> الحصة منفذة — التقرير متاح للمدير
+          </div>
+        )}
       </Card>
 
-      {/* Form */}
       <div className="space-y-1">
         <TextArea label="موضوع الحصة" value={form.topic || ''} onChange={v => set('topic', v)} rows={2} placeholder="مثلاً: تمارين الإحماء والتعبير الجسدي" />
         <TextArea label="أهداف الحصة" value={form.objectives || ''} onChange={v => set('objectives', v)} rows={3} placeholder="ما الأهداف المراد تحقيقها؟" />
@@ -148,14 +191,17 @@ export default function TrainingFormPage() {
           onChange={v => set('status', v as SessionStatus)}
           options={Object.entries(SESSION_STATUS_LABELS).map(([v, l]) => ({ value: v, label: l }))} />
 
-        {/* Save button */}
-        <div className="sticky bottom-20 md:bottom-4 pt-4">
-          <Button onClick={handleSave} size="lg" className="w-full" icon={<Save size={20} />}>
+        <div className="sticky bottom-20 md:bottom-4 pt-4 space-y-2">
+          {!isCompleted && (
+            <Button onClick={handleComplete} size="lg" className="w-full" icon={<CheckCircle2 size={20} />} disabled={completing}>
+              {completing ? 'جاري تسجيل الحصة...' : '✅ نفذت الحصة — إنشاء التقرير'}
+            </Button>
+          )}
+          <Button onClick={handleSave} size="lg" className="w-full" variant={isCompleted ? 'primary' : 'secondary'} icon={<Save size={20} />}>
             {saved ? '✅ تم الحفظ بنجاح' : '💾 حفظ الحصة'}
           </Button>
         </div>
 
-        {/* Navigation between sessions */}
         <div className="flex items-center justify-between pt-4 pb-2">
           {prevSession ? (
             <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/training/${prevSession.id}`)} icon={<ChevronRight size={16} />}>
