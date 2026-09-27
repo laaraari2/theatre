@@ -5,6 +5,7 @@ import { db } from '../db/database';
 import { DAY_NAMES } from '../types';
 import type { ClassSection } from '../types';
 import { DEFAULT_PROGRAM_PHASES } from '../constants/program';
+import { useAuthRole } from '../hooks/useAuthRole';
 import { Calendar, Clock, BookOpen, Users, Star, ChevronLeft, MapPin, Phone, Mail, ExternalLink, Printer } from 'lucide-react';
 
 // French day names
@@ -36,6 +37,8 @@ export default function VisitorSite() {
   const classes = useLiveQuery(() => db.classes.orderBy('order').toArray()) ?? [];
   const settings = useLiveQuery(() => db.settings.toCollection().first());
   const scripts = useLiveQuery(() => db.scripts.toArray()) ?? [];
+  const { role, loading: authLoading } = useAuthRole();
+  const isDirector = role === 'director';
 
   const morningSlots = FIXED_TIME_SLOTS.filter(s => s.period === 'morning');
   const afternoonSlots = FIXED_TIME_SLOTS.filter(s => s.period === 'afternoon');
@@ -303,56 +306,8 @@ export default function VisitorSite() {
         </div>
       </section>
 
-      {/* ========== PLAYS / SCRIPTS ========== */}
-      {scripts.length > 0 && (
-        <section id="plays" className="py-16 md:py-24 no-print">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-black text-text mb-3">النصوص المسرحية</h2>
-              <div className="w-20 h-1 bg-secondary mx-auto rounded-full mb-4"></div>
-              <p className="text-text-muted">مجموعة من النصوص المسرحية المعتمدة في الورشة</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {scripts.slice(0, 6).map(script => (
-                <div key={script.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-                  {/* Card header */}
-                  <div className="bg-gradient-to-l from-primary/90 to-primary p-5 text-white">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-bold text-lg leading-tight">{script.title}</h3>
-                        <p className="text-white/70 text-sm mt-1">{script.level}</p>
-                      </div>
-                      <span className="text-3xl opacity-30 group-hover:opacity-50 transition-opacity">🎬</span>
-                    </div>
-                  </div>
-                  {/* Card body */}
-                  <div className="p-5">
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2 text-text-muted">
-                        <Clock size={14} />
-                        <span>{script.duration}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-text-muted">
-                        <Users size={14} />
-                        <span>{script.characterCount} شخصيات</span>
-                      </div>
-                    </div>
-                    {script.techniques && script.techniques.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {script.techniques.slice(0, 3).map((tech, i) => (
-                          <span key={i} className="text-[10px] bg-primary/5 text-primary px-2 py-0.5 rounded-full">{tech}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
+      {/* النصوص المسرحية لا تظهر في الواجهة العامة.
+          المدير يصل إليها من داخل القسم المستفيد بعد تسجيل الدخول. */}
       {/* ========== FOOTER ========== */}
       <footer className="bg-gradient-to-bl from-[#1a1a2e] to-[#16213e] text-white py-12 no-print">
         <div className="max-w-6xl mx-auto px-4">
