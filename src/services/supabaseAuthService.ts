@@ -197,8 +197,14 @@ export async function supabaseRestRequest<T = unknown>(
     throw new Error('لا توجد جلسة Supabase صالحة.');
   }
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  const isReadRequest = !options.method || options.method.toUpperCase() === 'GET';
+  const requestPath = isReadRequest
+    ? `${path}${path.includes('?') ? '&' : '?'}_ts=${Date.now()}`
+    : path;
+
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${requestPath}`, {
     ...options,
+    cache: isReadRequest ? 'no-store' : options.cache,
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${session.access_token}`,
