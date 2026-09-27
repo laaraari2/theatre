@@ -54,9 +54,11 @@ export default function VisitorSite() {
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-3xl shrink-0">🎭</span>
             <div className="min-w-0">
-              <div className="font-bold text-primary text-base sm:text-lg leading-tight whitespace-nowrap">
+              <div className="font-bold text-primary text-base sm:text-lg leading-tight">
                 ورشة المسرح المدرسي
-                <span className="text-accent text-xs sm:text-sm font-semibold"> — الأستاذ مصطفى لعرعري</span>
+              </div>
+              <div className="text-accent text-xs sm:text-sm font-semibold leading-tight mt-0.5">
+                الأستاذ مصطفى لعرعري
               </div>
               <div className="text-xs text-gray-500">{settings?.schoolName || 'مؤسسة العمران'}</div>
             </div>
