@@ -2,7 +2,7 @@ import { db } from '../db/database';
 import { supabaseRestRequest, isSupabaseConfigured } from './supabaseAuthService';
 
 type LocalRow = {
-  id?: number;
+  id?: number | string;
   [key: string]: unknown;
 };
 
