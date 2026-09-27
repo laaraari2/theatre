@@ -26,6 +26,7 @@ export default function DirectorClassPage() {
   const localSessions = useLiveQuery(() => Number.isFinite(classId) ? db.sessions.where('classId').equals(classId).sortBy('date') : [], [classId]) ?? [];
 
   const [data, setData] = React.useState<{ cls: any; sessions: any[] } | null>(null);
+  const [remoteScript, setRemoteScript] = React.useState<any | null>(null);
   const [loadingRemote, setLoadingRemote] = React.useState(true);
 
   React.useEffect(() => {
@@ -43,6 +44,12 @@ export default function DirectorClassPage() {
             cls: classes[0],
             sessions: sessions || [],
           });
+
+          const scriptId = (sessions || []).map((s: any) => s.script_id).find((value: any) => value !== null && value !== undefined);
+          if (scriptId) {
+            const scripts = await supabaseRestRequest<any[]>(`scripts?id=eq.${scriptId}&select=*`);
+            if (active && scripts?.[0]) setRemoteScript(scripts[0]);
+          }
         }
       } catch {
         // Dexie remains a safe local fallback while the Supabase migration is being completed.
@@ -95,7 +102,7 @@ export default function DirectorClassPage() {
     sessions.map((s: any) => s.script_id ?? s.scriptId).filter((v: any) => v !== null && v !== undefined),
   ));
   const remoteScripts = data ? localScripts.filter(s => scriptIds.includes(s.id)) : localScripts;
-  const firstScript = remoteScripts[0];
+  const firstScript = remoteScript || remoteScripts[0];
 
   return (
     <div className="min-h-screen bg-bg py-8 px-4" dir="rtl">
