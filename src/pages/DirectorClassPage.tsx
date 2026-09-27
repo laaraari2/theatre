@@ -75,7 +75,16 @@ export default function DirectorClassPage() {
         class_id: s.classId,
         session_number: s.sessionNumber,
       }));
+  const localScripts = useLiveQuery(
+    () => localScriptIds.size ? db.scripts.toArray() : [],
+    [classId, localSessions.length, Array.from(localScriptIds).join(',')],
+  ) ?? [];
 
+  const scriptIds = Array.from(new Set(
+    sessions.map((s: any) => s.script_id ?? s.scriptId).filter((v: any) => v !== null && v !== undefined),
+  ));
+  const remoteScripts = data ? localScripts.filter(s => scriptIds.includes(s.id)) : localScripts;
+  const firstScript = remoteScript || remoteScripts[0];
   if (!cls) {
     return (
       <div className="min-h-screen bg-bg py-12 px-4" dir="rtl">
@@ -93,16 +102,7 @@ export default function DirectorClassPage() {
   const cancelled = sessions.filter((s: any) => s.status === 'cancelled').length;
 
   const localScriptIds = new Set(localSessions.map(s => s.scriptId).filter(Boolean));
-  const localScripts = useLiveQuery(
-    () => localScriptIds.size ? db.scripts.toArray() : [],
-    [classId, localSessions.length, Array.from(localScriptIds).join(',')],
-  ) ?? [];
 
-  const scriptIds = Array.from(new Set(
-    sessions.map((s: any) => s.script_id ?? s.scriptId).filter((v: any) => v !== null && v !== undefined),
-  ));
-  const remoteScripts = data ? localScripts.filter(s => scriptIds.includes(s.id)) : localScripts;
-  const firstScript = remoteScript || remoteScripts[0];
 
   return (
     <div className="min-h-screen bg-bg py-8 px-4" dir="rtl">
