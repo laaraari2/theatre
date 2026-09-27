@@ -8,14 +8,10 @@ import { supabaseRestRequest } from '../services/supabaseAuthService';
 
 function statusClass(status: SessionStatus): string {
   switch (status) {
-    case 'completed':
-      return 'bg-green-100 text-green-800';
-    case 'postponed':
-      return 'bg-amber-100 text-amber-800';
-    case 'cancelled':
-      return 'bg-red-100 text-red-800';
-    default:
-      return 'bg-blue-100 text-blue-800';
+    case 'completed': return 'bg-green-100 text-green-800';
+    case 'postponed': return 'bg-amber-100 text-amber-800';
+    case 'cancelled': return 'bg-red-100 text-red-800';
+    default: return 'bg-blue-100 text-blue-800';
   }
 }
 
@@ -31,20 +27,14 @@ export default function DirectorClassPage() {
 
   React.useEffect(() => {
     let active = true;
-
     const load = async () => {
       try {
         const [classes, sessions] = await Promise.all([
           supabaseRestRequest<any[]>(`classes?id=eq.${classId}&select=*`),
           supabaseRestRequest<any[]>(`sessions?class_id=eq.${classId}&select=*&order=date.desc,start_time.desc`),
         ]);
-
         if (active && classes?.[0]) {
-          setData({
-            cls: classes[0],
-            sessions: sessions || [],
-          });
-
+          setData({ cls: classes[0], sessions: sessions || [] });
           const scriptId = (sessions || []).map((s: any) => s.script_id).find((value: any) => value !== null && value !== undefined);
           if (scriptId) {
             const scripts = await supabaseRestRequest<any[]>(`scripts?id=eq.${scriptId}&select=*`);
@@ -52,40 +42,31 @@ export default function DirectorClassPage() {
           }
         }
       } catch {
-        // Dexie remains a safe local fallback while the Supabase migration is being completed.
+        // Dexie remains a safe local fallback.
       } finally {
         if (active) setLoadingRemote(false);
       }
     };
-
     if (Number.isFinite(classId)) load();
     else setLoadingRemote(false);
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [classId]);
 
   const cls = data?.cls || localClass;
   const sessions = data
     ? data.sessions
-    : localSessions.map(s => ({
-        ...s,
-        start_time: s.startTime,
-        class_id: s.classId,
-        session_number: s.sessionNumber,
-      }));
+    : localSessions.map(s => ({ ...s, start_time: s.startTime, class_id: s.classId, session_number: s.sessionNumber }));
+
   const localScriptIds = new Set(localSessions.map(s => s.scriptId).filter(Boolean));
   const localScripts = useLiveQuery(
     () => localScriptIds.size ? db.scripts.toArray() : [],
     [classId, localSessions.length, Array.from(localScriptIds).join(',')],
   ) ?? [];
 
-  const scriptIds = Array.from(new Set(
-    sessions.map((s: any) => s.script_id ?? s.scriptId).filter((v: any) => v !== null && v !== undefined),
-  ));
+  const scriptIds = Array.from(new Set(sessions.map((s: any) => s.script_id ?? s.scriptId).filter((v: any) => v !== null && v !== undefined)));
   const remoteScripts = data ? localScripts.filter(s => scriptIds.includes(s.id)) : localScripts;
   const firstScript = remoteScript || remoteScripts[0];
+
   if (!cls) {
     return (
       <div className="min-h-screen bg-bg py-12 px-4" dir="rtl">
@@ -101,19 +82,18 @@ export default function DirectorClassPage() {
   const scheduled = sessions.filter((s: any) => s.status === 'scheduled').length;
   const postponed = sessions.filter((s: any) => s.status === 'postponed').length;
   const cancelled = sessions.filter((s: any) => s.status === 'cancelled').length;
-
+  // المدير يشاهد تفاصيل التقرير فقط للحصص التي تم تنفيذها فعلاً.
+  const completedSessions = sessions.filter((s: any) => s.status === 'completed');
 
   return (
     <div className="min-h-screen bg-bg py-8 px-4" dir="rtl">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between gap-4 mb-6">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-primary">
-            <ArrowRight size={18} />
-            العودة إلى الواجهة
+            <ArrowRight size={18} /> العودة إلى الواجهة
           </Link>
           <span className="inline-flex items-center gap-2 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-xs font-semibold text-primary">
-            <BarChart3 size={14} />
-            وضع المدير
+            <BarChart3 size={14} /> وضع المدير
           </span>
         </div>
 
@@ -128,8 +108,8 @@ export default function DirectorClassPage() {
           <div className="flex items-center gap-3 mb-5">
             <BarChart3 className="text-primary" size={22} />
             <div>
-              <h2 className="text-xl font-black text-text">تقرير الحصص</h2>
-              <p className="text-sm text-text-muted">ملخص تتبع الحصص الخاصة بهذا القسم</p>
+              <h2 className="text-xl font-black text-text">تتبع القسم</h2>
+              <p className="text-sm text-text-muted">عدد الحصص المبرمجة والمنجزة والمؤجلة والملغاة</p>
             </div>
           </div>
 
@@ -141,27 +121,28 @@ export default function DirectorClassPage() {
           </div>
 
           {firstScript && (
-            <Link
-              to={`/director/script/${firstScript.id}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary/5 text-primary px-4 py-3 font-semibold text-sm hover:bg-primary/10 transition-colors"
-            >
-              <BookOpen size={18} />
-              نص المسرحية: {firstScript.title}
+            <Link to={`/director/script/${firstScript.id}`} className="inline-flex items-center gap-2 rounded-xl bg-primary/5 text-primary px-4 py-3 font-semibold text-sm hover:bg-primary/10 transition-colors">
+              <BookOpen size={18} /> نص المسرحية: {firstScript.title}
             </Link>
           )}
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-1">
             <FileText size={20} className="text-secondary" />
-            <h2 className="text-lg font-black text-text">تفاصيل الحصص</h2>
+            <h2 className="text-lg font-black text-text">تقارير الحصص المنفذة</h2>
           </div>
+          <p className="text-sm text-text-muted mb-4">التقرير لا يظهر هنا إلا بعد الضغط على «نفذت الحصة — إنشاء التقرير».</p>
 
-          {sessions.length === 0 ? (
-            <div className="py-12 text-center text-text-muted">لا توجد حصص مسجلة لهذا القسم حالياً.</div>
+          {completedSessions.length === 0 ? (
+            <div className="py-12 text-center">
+              <Clock className="mx-auto mb-3 text-text-muted" size={30} />
+              <p className="font-semibold text-text">لا يوجد تقرير بعد</p>
+              <p className="text-sm text-text-muted mt-1">الحصة ما زالت مبرمجة ولم يتم تأكيد تنفيذها.</p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {sessions.map((session: any, index: number) => {
+              {completedSessions.map((session: any, index: number) => {
                 const status: SessionStatus = session.status;
                 const date = session.date;
                 const topic = session.topic || 'بدون موضوع مسجل';
@@ -172,9 +153,7 @@ export default function DirectorClassPage() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-bold text-text">الحصة {session.session_number ?? session.sessionNumber ?? index + 1}</span>
-                          <span className={`px-2 py-1 rounded-full text-[11px] font-semibold ${statusClass(status)}`}>
-                            {SESSION_STATUS_LABELS[status] || status}
-                          </span>
+                          <span className={`px-2 py-1 rounded-full text-[11px] font-semibold ${statusClass(status)}`}>{SESSION_STATUS_LABELS[status] || status}</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted mt-1">
                           <span className="inline-flex items-center gap-1"><Calendar size={13} /> {date}</span>
@@ -182,23 +161,19 @@ export default function DirectorClassPage() {
                           <span>{session.duration} دقيقة</span>
                         </div>
                       </div>
-                      {status === 'completed' ? <CheckCircle2 className="text-success" size={20} /> : status === 'postponed' ? <AlertTriangle className="text-warning" size={20} /> : status === 'cancelled' ? <XCircle className="text-danger" size={20} /> : <Clock className="text-info" size={20} />}
+                      <CheckCircle2 className="text-success" size={20} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <div className="text-[11px] font-bold text-primary mb-1">موضوع الحصة</div>
-                        <div className="text-sm text-text whitespace-pre-line">{topic}</div>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <div className="text-[11px] font-bold text-primary mb-1">ملاحظات الأستاذ</div>
-                        <div className="text-sm text-text-muted whitespace-pre-line">{notes || '—'}</div>
-                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3"><div className="text-[11px] font-bold text-primary mb-1">موضوع الحصة</div><div className="text-sm text-text whitespace-pre-line">{topic}</div></div>
+                      <div className="bg-gray-50 rounded-xl p-3"><div className="text-[11px] font-bold text-primary mb-1">أهداف الحصة</div><div className="text-sm text-text whitespace-pre-line">{session.objectives || '—'}</div></div>
+                      <div className="bg-gray-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-primary mb-1">سير الحصة</div><div className="text-sm text-text-muted whitespace-pre-line">{session.activities || '—'}</div></div>
+                      <div className="bg-gray-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-primary mb-1">ملاحظات الأستاذ</div><div className="text-sm text-text-muted whitespace-pre-line">{notes || '—'}</div></div>
+                      {session.difficulties && <div className="bg-amber-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-amber-700 mb-1">الصعوبات</div><div className="text-sm text-text-muted whitespace-pre-line">{session.difficulties}</div></div>}
+                      {session.next_session_plan && <div className="bg-blue-50 rounded-xl p-3 md:col-span-2"><div className="text-[11px] font-bold text-blue-700 mb-1">خطة الحصة القادمة</div><div className="text-sm text-text-muted whitespace-pre-line">{session.next_session_plan}</div></div>}
                     </div>
-                    {(session.techniques?.length || session.techniques?.length === 0) && session.techniques?.length > 0 && (
+                    {session.techniques?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
-                        {session.techniques.map((tech: string) => (
-                          <span key={tech} className="px-2 py-1 rounded-full text-[10px] bg-secondary/10 text-secondary-light">{tech}</span>
-                        ))}
+                        {session.techniques.map((tech: string) => <span key={tech} className="px-2 py-1 rounded-full text-[10px] bg-secondary/10 text-secondary-light">{tech}</span>)}
                       </div>
                     )}
                   </div>
