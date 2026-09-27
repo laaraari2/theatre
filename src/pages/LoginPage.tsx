@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
+import { isSupabaseConfigured, loginWithSupabase } from '../services/supabaseAuthService';
 import { Lock, Eye, EyeOff, Theater } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -15,6 +17,20 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    if (isSupabaseConfigured()) {
+      const result = await loginWithSupabase(email, password);
+      setLoading(false);
+      if (result.success) {
+        navigate(result.role === 'director' ? '/' : '/admin', { replace: true });
+      } else {
+        setError(result.error || 'بيانات الدخول غير صحيحة.');
+        setShake(true);
+        setTimeout(() => setShake(false), 600);
+        setPassword('');
+      }
+      return;
+    }
 
     const ok = await login(password);
     setLoading(false);
@@ -42,11 +58,26 @@ export default function LoginPage() {
             <Theater size={32} strokeWidth={1.5} />
           </div>
           <h1 className="login-title">مسرحي</h1>
-          <p className="login-subtitle">لوحة تحكم الأستاذ</p>
+          <p className="login-subtitle">{isSupabaseConfigured() ? 'دخول الأستاذ أو المدير' : 'لوحة تحكم الأستاذ'}</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="login-form">
+          {isSupabaseConfigured() && (
+            <div className="login-field">
+              <label htmlFor="email" className="login-label">البريد الإلكتروني</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="login-input"
+                required
+              />
+            </div>
+          )}
+
           <div className="login-field">
             <label htmlFor="password" className="login-label">
               <Lock size={14} />
@@ -88,15 +119,17 @@ export default function LoginPage() {
             {loading ? (
               <span className="login-spinner" />
             ) : (
-              'دخول إلى لوحة التحكم'
+              {isSupabaseConfigured() ? 'دخول' : 'دخول إلى لوحة التحكم'}
             )}
           </button>
         </form>
 
         {/* Hint */}
-        <p className="login-hint">
-          كلمة المرور الافتراضية: <code>admin123</code>
-        </p>
+        {!isSupabaseConfigured() && (
+          <p className="login-hint">
+            كلمة المرور الافتراضية: <code>admin123</code>
+          </p>
+        )}
       </div>
     </div>
   );
