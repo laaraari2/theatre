@@ -198,17 +198,15 @@ export async function supabaseRestRequest<T = unknown>(
   }
 
   const isReadRequest = !options.method || options.method.toUpperCase() === 'GET';
-  const requestPath = isReadRequest
-    ? `${path}${path.includes('?') ? '&' : '?'}_ts=${Date.now()}`
-    : path;
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${requestPath}`, {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
     cache: isReadRequest ? 'no-store' : options.cache,
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
+      ...(isReadRequest ? { 'Cache-Control': 'no-cache, no-store, must-revalidate' } : {}),
       ...(options.headers || {}),
     },
   });
