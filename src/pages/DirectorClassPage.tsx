@@ -27,6 +27,8 @@ export default function DirectorClassPage() {
 
   React.useEffect(() => {
     let active = true;
+    let intervalId: number | undefined;
+
     const load = async () => {
       try {
         const [classes, sessions] = await Promise.all([
@@ -39,6 +41,8 @@ export default function DirectorClassPage() {
           if (scriptId) {
             const scripts = await supabaseRestRequest<any[]>(`scripts?id=eq.${scriptId}&select=*`);
             if (active && scripts?.[0]) setRemoteScript(scripts[0]);
+          } else if (active) {
+            setRemoteScript(null);
           }
         }
       } catch {
@@ -47,9 +51,19 @@ export default function DirectorClassPage() {
         if (active) setLoadingRemote(false);
       }
     };
-    if (Number.isFinite(classId)) load();
-    else setLoadingRemote(false);
-    return () => { active = false; };
+
+    if (Number.isFinite(classId)) {
+      load();
+      // تحديث تلقائي للتقرير بدون الحاجة إلى Refresh في جهاز المدير.
+      intervalId = window.setInterval(load, 3000);
+    } else {
+      setLoadingRemote(false);
+    }
+
+    return () => {
+      active = false;
+      if (intervalId !== undefined) window.clearInterval(intervalId);
+    };
   }, [classId]);
 
   const cls = data?.cls || localClass;
