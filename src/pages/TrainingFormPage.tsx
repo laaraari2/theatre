@@ -88,29 +88,31 @@ export default function TrainingFormPage() {
   const nextSession = currentIdx < classSessions.length - 1 ? classSessions[currentIdx + 1] : null;
 
   const syncSessionToSupabase = async (sessionForm: Partial<TrainingSession>) => {
-    try {
-      await supabaseRestRequest(
-        `sessions?class_id=eq.${session.classId}&date=eq.${session.date}`,
-        {
-          method: 'PATCH',
-          headers: { Prefer: 'return=minimal' },
-          body: JSON.stringify({
-            status: sessionForm.status || session.status,
-            topic: sessionForm.topic || '',
-            objectives: sessionForm.objectives || '',
-            activities: sessionForm.activities || '',
-            techniques: sessionForm.techniques || [],
-            teacher_notes: sessionForm.teacherNotes || '',
-            difficulties: sessionForm.difficulties || '',
-            students_needing_support: sessionForm.studentsNeedingSupport || '',
-            next_session_plan: sessionForm.nextSessionPlan || '',
-            script_id: sessionForm.scriptId ?? null,
-            scene_info: sessionForm.sceneInfo || '',
-          }),
-        },
-      );
-    } catch {
-      // Local save remains available when Supabase is not configured.
+    if (!sessionForm) return;
+
+    const updated = await supabaseRestRequest<any[]>(
+      `sessions?class_id=eq.${session.classId}&date=eq.${session.date}`,
+      {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({
+          status: sessionForm.status || session.status,
+          topic: sessionForm.topic || '',
+          objectives: sessionForm.objectives || '',
+          activities: sessionForm.activities || '',
+          techniques: sessionForm.techniques || [],
+          teacher_notes: sessionForm.teacherNotes || '',
+          difficulties: sessionForm.difficulties || '',
+          students_needing_support: sessionForm.studentsNeedingSupport || '',
+          next_session_plan: sessionForm.nextSessionPlan || '',
+          script_id: sessionForm.scriptId ?? null,
+          scene_info: sessionForm.sceneInfo || '',
+        }),
+      },
+    );
+
+    if (!Array.isArray(updated) || updated.length === 0) {
+      throw new Error('لم يتم العثور على الحصة في قاعدة البيانات لتحديث التقرير.');
     }
   };
 
@@ -119,21 +121,31 @@ export default function TrainingFormPage() {
   };
 
   const handleSave = async () => {
-    await db.sessions.update(sessionId, form);
-    await syncSessionToSupabase(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      await db.sessions.update(sessionId, form);
+      await syncSessionToSupabase(form);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      setSaved(false);
+      alert(error instanceof Error ? error.message : 'تعذر حفظ التقرير في قاعدة البيانات.');
+    }
   };
 
   const handleComplete = async () => {
     setCompleting(true);
-    const completedForm = { ...form, status: 'completed' as SessionStatus };
-    await db.sessions.update(sessionId, completedForm);
-    await syncCompletedSession(completedForm);
-    setForm(completedForm);
-    setSaved(true);
-    setCompleting(false);
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      const completedForm = { ...form, status: 'completed' as SessionStatus };
+      await db.sessions.update(sessionId, completedForm);
+      await syncCompletedSession(completedForm);
+      setForm(completedForm);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'تعذر تسجيل التقرير في قاعدة البيانات.');
+    } finally {
+      setCompleting(false);
+    }
   };
 
   const set = (key: string, value: unknown) => setForm(prev => ({ ...prev, [key]: value }));
