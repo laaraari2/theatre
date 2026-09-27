@@ -119,7 +119,7 @@ export default function LoginPage() {
             {loading ? (
               <span className="login-spinner" />
             ) : (
-              {isSupabaseConfigured() ? 'دخول' : 'دخول إلى لوحة التحكم'}
+              isSupabaseConfigured() ? 'دخول' : 'دخول إلى لوحة التحكم'
             )}
           </button>
         </form>
