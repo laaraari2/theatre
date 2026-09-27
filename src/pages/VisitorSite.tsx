@@ -166,19 +166,44 @@ export default function VisitorSite() {
             <div className="w-20 h-1 bg-secondary mx-auto rounded-full mb-4"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {classes.map(cls => (
-              <div key={cls.id} className="bg-bg rounded-xl p-5 text-center border border-gray-100 hover:border-primary/30 transition-colors">
-                <div className="text-2xl font-black text-primary mb-1">{cls.name}</div>
-                <div className="text-sm text-text-muted mb-3">{cls.level}</div>
-                <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
-                  <Calendar size={13} />
-                  <span>{FRENCH_DAY_NAMES[cls.dayOfWeek]}</span>
-                  <span className="mx-1">•</span>
-                  <Clock size={13} />
-                  <span>{cls.startTime.replace(':', 'h')}</span>
+            {classes.map(cls => {
+              const card = (
+                <>
+                  <div className="text-2xl font-black text-primary mb-1">{cls.name}</div>
+                  <div className="text-sm text-text-muted mb-3">{cls.level}</div>
+                  <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
+                    <Calendar size={13} />
+                    <span>{FRENCH_DAY_NAMES[cls.dayOfWeek]}</span>
+                    <span className="mx-1">•</span>
+                    <Clock size={13} />
+                    <span>{cls.startTime.replace(':', 'h')}</span>
+                  </div>
+                  {isDirector && (
+                    <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                      📊 تقرير الحصص
+                    </div>
+                  )}
+                </>
+              );
+
+              return isDirector ? (
+                <Link
+                  key={cls.id}
+                  to={`/director/class/${cls.id}`}
+                  className="bg-bg rounded-xl p-5 text-center border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all block"
+                  aria-label={`فتح تقرير حصص ${cls.name}`}
+                >
+                  {card}
+                </Link>
+              ) : (
+                <div
+                  key={cls.id}
+                  className="bg-bg rounded-xl p-5 text-center border border-gray-100 transition-colors"
+                >
+                  {card}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
