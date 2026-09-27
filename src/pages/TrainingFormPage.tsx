@@ -90,8 +90,19 @@ export default function TrainingFormPage() {
   const syncSessionToSupabase = async (sessionForm: Partial<TrainingSession>) => {
     if (!sessionForm) return;
 
+    // نحدد سجل Supabase أولاً، ثم نحدّثه بالـ id الحقيقي حتى لا يتأثر
+    // الحفظ بوجود أكثر من حصة محلية أو تكرار نفس التاريخ.
+    const remoteRows = await supabaseRestRequest<any[]>(
+      `sessions?class_id=eq.${session.classId}&date=eq.${session.date}&select=id`,
+    );
+
+    const remoteId = remoteRows?.[0]?.id;
+    if (remoteId === undefined || remoteId === null) {
+      throw new Error('لم يتم العثور على الحصة في قاعدة البيانات لتحديث التقرير.');
+    }
+
     const updated = await supabaseRestRequest<any[]>(
-      `sessions?class_id=eq.${session.classId}&date=eq.${session.date}`,
+      `sessions?id=eq.${remoteId}&select=id,status,teacher_notes,difficulties,students_needing_support,next_session_plan`,
       {
         method: 'PATCH',
         headers: { Prefer: 'return=representation' },
@@ -111,8 +122,32 @@ export default function TrainingFormPage() {
       },
     );
 
-    if (!Array.isArray(updated) || updated.length === 0) {
-      throw new Error('لم يتم العثور على الحصة في قاعدة البيانات لتحديث التقرير.');
+    const savedRow = updated?.[0];
+    if (!savedRow) {
+      throw new Error('تعذر تحديث التقرير في قاعدة البيانات. تحقق من صلاحية الحساب.');
+    }
+
+    // تحقق فوري من القراءة بعد الكتابة حتى لا نظهر نجاحاً وهمياً.
+    const verifiedRows = await supabaseRestRequest<any[]>(
+      `sessions?id=eq.${remoteId}&select=id,status,teacher_notes,difficulties,students_needing_support,next_session_plan`,
+    );
+    const verified = verifiedRows?.[0];
+    if (!verified) {
+      throw new Error('تمت الكتابة لكن تعذر التحقق من التقرير في قاعدة البيانات.');
+    }
+
+    const expectedNotes = sessionForm.teacherNotes || '';
+    const expectedDifficulties = sessionForm.difficulties || '';
+    const expectedSupport = sessionForm.studentsNeedingSupport || '';
+    const expectedNext = sessionForm.nextSessionPlan || '';
+
+    if (
+      verified.teacher_notes !== expectedNotes ||
+      verified.difficulties !== expectedDifficulties ||
+      verified.students_needing_support !== expectedSupport ||
+      verified.next_session_plan !== expectedNext
+    ) {
+      throw new Error('قاعدة البيانات لم تحفظ آخر تعديل بالكامل. حاول الحفظ مرة أخرى.');
     }
   };
 
