@@ -87,7 +87,7 @@ export default function TrainingFormPage() {
   const prevSession = currentIdx > 0 ? classSessions[currentIdx - 1] : null;
   const nextSession = currentIdx < classSessions.length - 1 ? classSessions[currentIdx + 1] : null;
 
-  const syncCompletedSession = async (completedForm: Partial<TrainingSession>) => {
+  const syncSessionToSupabase = async (sessionForm: Partial<TrainingSession>) => {
     try {
       await supabaseRestRequest(
         `sessions?class_id=eq.${session.classId}&date=eq.${session.date}`,
@@ -95,27 +95,32 @@ export default function TrainingFormPage() {
           method: 'PATCH',
           headers: { Prefer: 'return=minimal' },
           body: JSON.stringify({
-            status: 'completed',
-            topic: completedForm.topic || '',
-            objectives: completedForm.objectives || '',
-            activities: completedForm.activities || '',
-            techniques: completedForm.techniques || [],
-            teacher_notes: completedForm.teacherNotes || '',
-            difficulties: completedForm.difficulties || '',
-            students_needing_support: completedForm.studentsNeedingSupport || '',
-            next_session_plan: completedForm.nextSessionPlan || '',
-            script_id: completedForm.scriptId ?? null,
-            scene_info: completedForm.sceneInfo || '',
+            status: sessionForm.status || session.status,
+            topic: sessionForm.topic || '',
+            objectives: sessionForm.objectives || '',
+            activities: sessionForm.activities || '',
+            techniques: sessionForm.techniques || [],
+            teacher_notes: sessionForm.teacherNotes || '',
+            difficulties: sessionForm.difficulties || '',
+            students_needing_support: sessionForm.studentsNeedingSupport || '',
+            next_session_plan: sessionForm.nextSessionPlan || '',
+            script_id: sessionForm.scriptId ?? null,
+            scene_info: sessionForm.sceneInfo || '',
           }),
         },
       );
     } catch {
-      // Local completion remains available when Supabase is not configured.
+      // Local save remains available when Supabase is not configured.
     }
+  };
+
+  const syncCompletedSession = async (completedForm: Partial<TrainingSession>) => {
+    await syncSessionToSupabase({ ...completedForm, status: 'completed' as SessionStatus });
   };
 
   const handleSave = async () => {
     await db.sessions.update(sessionId, form);
+    await syncSessionToSupabase(form);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
