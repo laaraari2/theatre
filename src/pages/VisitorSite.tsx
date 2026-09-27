@@ -51,10 +51,13 @@ export default function VisitorSite() {
       {/* ========== NAVBAR ========== */}
       <nav className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100 no-print">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🎭</span>
-            <div>
-              <div className="font-bold text-primary text-lg leading-tight">ورشة المسرح المدرسي</div>
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-3xl shrink-0">🎭</span>
+            <div className="min-w-0">
+              <div className="font-bold text-primary text-base sm:text-lg leading-tight whitespace-nowrap">
+                ورشة المسرح المدرسي
+                <span className="text-accent text-xs sm:text-sm font-semibold"> — الأستاذ مصطفى لعرعري</span>
+              </div>
               <div className="text-xs text-gray-500">{settings?.schoolName || 'مؤسسة العمران'}</div>
             </div>
           </div>
@@ -66,6 +69,16 @@ export default function VisitorSite() {
             <a href="#plays" className="hover:text-primary transition-colors">المسرحيات</a>
             <Link to="/admin" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1 text-xs">
               <ExternalLink size={14} />
+              لوحة التحكم
+            </Link>
+          </div>
+
+          <div className="md:hidden mt-3">
+            <Link
+              to="/admin"
+              className="w-full bg-primary text-white px-4 py-2.5 rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 text-sm font-semibold shadow-sm"
+            >
+              <ExternalLink size={16} />
               لوحة التحكم
             </Link>
           </div>
